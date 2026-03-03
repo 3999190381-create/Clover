@@ -391,7 +391,7 @@ tokenizers==0.21.4
     # via
     #   cohere
     #   litellm
-tqdm==4.67.1
+tqdm==4.67.3
     # via
     #   huggingface-hub
     #   openai

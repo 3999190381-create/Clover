@@ -562,7 +562,7 @@ tornado==6.5.2
     # via
     #   ipykernel
     #   jupyter-client
-tqdm==4.67.1
+tqdm==4.67.3
     # via
     #   huggingface-hub
     #   openai
