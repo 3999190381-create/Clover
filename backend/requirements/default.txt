@@ -907,7 +907,7 @@ python-dotenv==1.1.1
     #   mcp
     #   onyx
     #   pydantic-settings
-python-gitlab==5.6.0
+python-gitlab==8.0.0
     # via onyx
 python-http-client==3.3.7
     # via sendgrid
