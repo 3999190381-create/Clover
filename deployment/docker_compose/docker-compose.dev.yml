@@ -32,10 +32,18 @@ services:
       - "9000:9000"
 
   cache:
+    image: redis:alpine
     ports:
       - "6379:6379"
 
   minio:
+    image: minio/minio:latest  # 👈 添加这一行
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+     - minio_data:/data 
     # use different ports to avoid conflicts with model servers
     ports:
       - "9004:9000"
