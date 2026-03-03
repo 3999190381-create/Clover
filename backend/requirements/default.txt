@@ -799,7 +799,7 @@ pwdlib==0.3.0
     # via fastapi-users
 py==1.11.0
     # via retry
-py-key-value-aio==0.3.0
+py-key-value-aio==0.4.4
     # via
     #   fastmcp
     #   pydocket
