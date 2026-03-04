@@ -1,5 +1,9 @@
 import "./globals.css";
 
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+
 import {
   fetchEnterpriseSettingsSS,
   fetchSettingsSS,
@@ -66,13 +70,28 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+export async function generateStaticParams() {
+  return [{ locale: 'en' }, { locale: 'zh' }];
+}
+
+
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { locale: string };
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+  
+  // ✅ 新增：验证 locale
+  if (!['en', 'zh'].includes(locale)) {
+    notFound();
+  }
+
   const [combinedSettings, user, authTypeMetadata] = await Promise.all([
     fetchSettingsSS(),
     getCurrentUserSS(),
@@ -86,7 +105,7 @@ export default async function RootLayout({
 
   const getPageContent = async (content: React.ReactNode) => (
     <html
-      lang="en"
+      lang="locale"
       className={`${inter.variable} ${hankenGrotesk.variable}`}
       suppressHydrationWarning
     >
@@ -131,6 +150,7 @@ export default async function RootLayout({
         >
           <div className="text-text min-h-screen bg-background">
             <TooltipProvider>
+              <NextIntlClientProvider messages={messages}>
               <PHProvider>{content}</PHProvider>
             </TooltipProvider>
           </div>

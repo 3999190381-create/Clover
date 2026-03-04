@@ -1,0 +1,18 @@
+{
+    "common": {
+      "loading": "加载中...",
+      "error": "错误",
+      "save": "保存",
+      "cancel": "取消",
+      "delete": "删除",
+      "edit": "编辑",
+      "search": "搜索",
+      "back": "返回"
+    },
+    "nav": {
+      "home": "首页",
+      "settings": "设置",
+      "docs": "文档",
+      "admin": "管理"
+    }
+  }

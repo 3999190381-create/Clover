@@ -1,9 +1,9 @@
-// Always require withSentryConfig
 const { withSentryConfig } = require("@sentry/nextjs");
+const withNextIntl = require('next-intl/plugin')('./src/i18n/request.ts'); // ✅ 新增
 
 const cspHeader = `
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com  ;
+    font-src 'self' https://fonts.gstatic.com  ;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
@@ -22,7 +22,6 @@ const nextConfig = {
   typedRoutes: true,
   reactCompiler: true,
   images: {
-    // Used to fetch favicons
     remotePatterns: [
       {
         protocol: "https",
@@ -31,7 +30,13 @@ const nextConfig = {
         pathname: "/s2/favicons/**",
       },
     ],
-    unoptimized: true, // Disable image optimization to avoid requiring Sharp
+    unoptimized: true,
+  },
+  // ✅ 新增
+  i18n: {
+    locales: ['en', 'zh'],
+    defaultLocale: 'en',
+    localeDetection: true,
   },
   async headers() {
     const isDev = process.env.NODE_ENV === "development";
@@ -63,14 +68,13 @@ const nextConfig = {
         ],
       },
       {
-        // Cache static assets (images, icons, fonts, etc.) to prevent refetching and re-renders
         source: "/_next/static/:path*",
         headers: [
           {
             key: "Cache-Control",
             value: isDev
-              ? "no-cache, must-revalidate" // Dev: always check if fresh
-              : "public, max-age=2592000, immutable", // Prod: cache for 30 days
+              ? "no-cache, must-revalidate"
+              : "public, max-age=2592000, immutable",
           },
         ],
       },
@@ -79,13 +83,13 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/docs/:path*", // catch /api/docs and /api/docs/...
+        source: "/api/docs/:path*",
         destination: `${
           process.env.INTERNAL_URL || "http://localhost:8080"
         }/docs/:path*`,
       },
       {
-        source: "/api/docs", // if you also need the exact /api/docs
+        source: "/api/docs",
         destination: `${
           process.env.INTERNAL_URL || "http://localhost:8080"
         }/docs`,
@@ -100,22 +104,16 @@ const nextConfig = {
   },
 };
 
-// Sentry configuration for error monitoring:
-// - Without SENTRY_AUTH_TOKEN and NEXT_PUBLIC_SENTRY_DSN: Sentry is completely disabled
-// - With both configured: Capture errors and limited performance data
-
-// Determine if Sentry should be enabled
 const sentryEnabled = Boolean(
   process.env.SENTRY_AUTH_TOKEN && process.env.NEXT_PUBLIC_SENTRY_DSN
 );
 
-// Sentry webpack plugin options
 const sentryWebpackPluginOptions = {
   org: process.env.SENTRY_ORG || "onyx-vl",
   project: process.env.SENTRY_PROJECT || "onyx-web",
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !sentryEnabled, // Silence output when Sentry is disabled
-  dryRun: !sentryEnabled, // Don't upload source maps when Sentry is disabled
+  silent: !sentryEnabled,
+  dryRun: !sentryEnabled,
   ...(sentryEnabled && {
     sourceMaps: {
       include: ["./.next"],
@@ -128,5 +126,8 @@ const sentryWebpackPluginOptions = {
   }),
 };
 
-// Export the module with conditional Sentry configuration
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+// ✅ 修改：先应用 next-intl，再应用 Sentry
+module.exports = withSentryConfig(
+  withNextIntl(nextConfig),
+  sentryWebpackPluginOptions
+);

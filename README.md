@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <a name="readme-top"></a>
 
 <h2 align="center">
@@ -106,3 +107,6 @@ Join our open source community on **[Discord](https://discord.gg/TDJ59cGV2X)**!
 
 ## 💡 Contributing
 Looking to contribute? Please check out the [Contribution Guide](CONTRIBUTING.md) for more details.
+=======
+# danswer
+>>>>>>> 09c38a68d17cfab970441c507f13e5cee908d0c3
