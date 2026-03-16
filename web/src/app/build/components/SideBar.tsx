@@ -258,7 +258,7 @@ const MemoizedBuildSidebarInner = memo(
           leftIcon={SvgSettings}
           folded={folded}
           href="/build/v1/configure"
-          transient={pathname.startsWith("/build/v1/configure")}
+          transient={pathname?.startsWith("/build/v1/configure")}
         >
           Configure
         </SidebarTab>
@@ -306,7 +306,7 @@ const MemoizedBuildSidebarInner = memo(
                     key={historyItem.id}
                     historyItem={historyItem}
                     isActive={
-                      !pathname.startsWith("/build/v1/configure") &&
+                      !pathname?.startsWith("/build/v1/configure") &&
                       session?.id === historyItem.id
                     }
                     onLoad={() => handleLoadSession(historyItem.id)}
