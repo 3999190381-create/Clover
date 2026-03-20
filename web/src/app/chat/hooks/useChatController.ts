@@ -107,7 +107,7 @@ interface UseChatControllerProps {
   availableAssistants: MinimalPersonaSnapshot[];
   existingChatSessionId: string | null;
   selectedDocuments: OnyxDocument[];
-  searchParams: ReadonlyURLSearchParams;
+  searchParams?: ReadonlyURLSearchParams | null;
   setPopup: (popup: PopupSpec) => void;
   resetInputBar: () => void;
   setSelectedAssistantFromId: (assistantId: number | null) => void;
@@ -1010,7 +1010,7 @@ export function useChatController({
 
   useEffect(() => {
     const handleSlackChatRedirect = async () => {
-      const slackChatId = searchParams.get("slackChatId");
+      const slackChatId = searchParams?.get("slackChatId");
       if (!slackChatId) return;
 
       // Set isReady to false before starting retrieval to display loading text

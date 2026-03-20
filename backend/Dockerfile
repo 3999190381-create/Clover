@@ -23,7 +23,9 @@ RUN groupadd -g 1001 onyx && \
     chmod 755 /var/log/onyx && \
     chown onyx:onyx /var/log/onyx
 
-COPY --from=ghcr.io/astral-sh/uv:0.9.9 /uv /uvx /bin/
+# Avoid relying on ghcr.io availability during Docker builds.
+# Install `uv` directly instead of copying it from the uv image.
+RUN python -m pip install --no-cache-dir --upgrade "uv==0.9.9"
 
 # Install system dependencies
 # cmake needed for psycopg (postgres)

@@ -14,7 +14,7 @@ import { FetchAssistantsResponse, fetchAssistantsSS } from "@/lib/agentsSS";
 import { getStandardAnswerCategoriesIfEE } from "@/components/standardAnswers/getStandardAnswerCategoriesIfEE";
 
 async function EditslackChannelConfigPage(props: {
-  params: Promise<{ id: number }>;
+  params: Promise<{ id: string }>;
 }) {
   const params = await props.params;
   const tasks = [

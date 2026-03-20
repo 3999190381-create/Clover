@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AdminPageTitle } from "@/components/admin/Title";
 import { getSourceMetadata, isValidSource } from "@/lib/sources";
@@ -8,7 +8,8 @@ import { ValidSources } from "@/lib/types";
 import CardSection from "@/components/admin/CardSection";
 import { handleOAuthAuthorizationResponse } from "@/lib/oauth_utils";
 import { SvgKey } from "@opal/icons";
-export default function OAuthCallbackPage() {
+
+function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -131,5 +132,13 @@ export default function OAuthCallbackPage() {
         </CardSection>
       </div>
     </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }

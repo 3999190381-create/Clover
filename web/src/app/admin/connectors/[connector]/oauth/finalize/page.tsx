@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AdminPageTitle } from "@/components/admin/Title";
 import Button from "@/refresh-components/buttons/Button";
@@ -52,6 +52,14 @@ function UpdateCloudURLOnCloudIdChange({
 }
 
 export default function OAuthFinalizePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+      <OAuthFinalizeContent />
+    </Suspense>
+  );
+}
+
+function OAuthFinalizeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

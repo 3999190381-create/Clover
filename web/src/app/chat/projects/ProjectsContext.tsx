@@ -138,7 +138,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
   const [currentProjectDetails, setCurrentProjectDetails] =
     useState<ProjectDetails | null>(null);
   const searchParams = useSearchParams();
-  const currentProjectIdRaw = searchParams.get(SEARCH_PARAM_NAMES.PROJECT_ID);
+  const currentProjectIdRaw = searchParams?.get(SEARCH_PARAM_NAMES.PROJECT_ID);
   const currentProjectId = currentProjectIdRaw
     ? Number.parseInt(currentProjectIdRaw)
     : null;

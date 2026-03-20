@@ -43,5 +43,8 @@ export function useAppRouter() {
 
 export function useAppParams() {
   const searchParams = useSearchParams();
-  return useCallback((name: string) => searchParams.get(name), [searchParams]);
+  return useCallback(
+    (name: string) => (searchParams ? searchParams.get(name) : null),
+    [searchParams]
+  );
 }

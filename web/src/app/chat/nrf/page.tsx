@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import NRFPage from "./NRFPage";
 import { NRFPreferencesProvider } from "@/components/context/NRFPreferencesContext";
 import * as AppLayouts from "@/layouts/app-layouts";
+import { Suspense } from "react";
 
 export default async function Page() {
   noStore();
@@ -13,7 +14,9 @@ export default async function Page() {
     <AppLayouts.Root disableFooter>
       <InstantSSRAutoRefresh />
       <NRFPreferencesProvider>
-        <NRFPage />
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+          <NRFPage />
+        </Suspense>
       </NRFPreferencesProvider>
     </AppLayouts.Root>
   );

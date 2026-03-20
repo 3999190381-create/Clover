@@ -24,7 +24,7 @@ export default function GatedContentWrapper({
 }) {
   const pathname = usePathname();
 
-  if (isPathAllowed(pathname)) {
+  if (pathname && isPathAllowed(pathname)) {
     return <>{children}</>;
   }
 

@@ -1,0 +1,18 @@
+{
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "search": "Search",
+      "back": "Back"
+    },
+    "nav": {
+      "home": "Home",
+      "settings": "Settings",
+      "docs": "Docs",
+      "admin": "Admin"
+    }
+  }

@@ -63,6 +63,7 @@ export default function MCPPageContent() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!searchParams) return;
     const serverId = searchParams.get("server_id");
     const triggerFetch = searchParams.get("trigger_fetch");
 

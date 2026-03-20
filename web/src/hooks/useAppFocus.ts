@@ -61,16 +61,17 @@ export default function useAppFocus(): AppFocus {
   const searchParams = useSearchParams();
 
   // Check if we're on the user settings page
-  if (pathname.startsWith("/chat/settings")) {
+  if (pathname?.startsWith("/chat/settings")) {
     return new AppFocus("user-settings");
   }
 
   // Check if we're on the agents page
-  if (pathname.startsWith("/chat/agents")) {
+  if (pathname?.startsWith("/chat/agents")) {
     return new AppFocus("more-agents");
   }
 
   // Check search params for chat, agent, or project
+  if (!searchParams) return new AppFocus("new-session");
   const chatId = searchParams.get(SEARCH_PARAM_NAMES.CHAT_ID);
   if (chatId) return new AppFocus({ type: "chat", id: chatId });
 

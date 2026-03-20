@@ -6,6 +6,7 @@ import {
 import Verify from "./Verify";
 import { User } from "@/lib/types";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function Page() {
   // catch cases where the backend is completely unreachable here
@@ -26,5 +27,9 @@ export default async function Page() {
     return redirect("/chat");
   }
 
-  return <Verify user={currentUser} />;
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+      <Verify user={currentUser} />
+    </Suspense>
+  );
 }

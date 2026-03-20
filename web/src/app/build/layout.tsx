@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { unstable_noStore as noStore } from "next/cache";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { fetchSettingsSS } from "@/components/settings/lib";
+import { Suspense } from "react";
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -31,5 +32,5 @@ export default async function Layout({ children }: LayoutProps) {
     redirect("/chat" as Route);
   }
 
-  return <>{children}</>;
+  return <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>{children}</Suspense>;
 }

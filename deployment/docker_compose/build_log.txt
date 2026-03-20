@@ -1,0 +1,59 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.91kB done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 6.98kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 1.4s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 162B done
+#4 DONE 0.0s
+
+#5 [base 1/1] FROM docker.io/library/node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617de04142dde7315e3bc0afa
+#5 resolve docker.io/library/node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617de04142dde7315e3bc0afa 0.0s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 ...
+
+#7 [runner 1/7] WORKDIR /app
+#7 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 13.30MB 0.9s done
+#6 DONE 0.9s
+
+#8 [runner 2/7] RUN rm -rf /usr/local/lib/node_modules
+#8 DONE 0.8s
+
+#9 [runner 3/7] RUN addgroup --system --gid 1001 nodejs
+#9 DONE 0.2s
+
+#10 [builder 1/8] RUN apk add --no-cache libc6-compat
+#10 ...
+
+#11 [runner 4/7] RUN adduser --system --uid 1001 nextjs
+#11 DONE 0.2s
+
+#10 [builder 1/8] RUN apk add --no-cache libc6-compat
+#10 2.461 (1/3) Installing musl-obstack (1.2.3-r2)
+#10 2.609 (2/3) Installing libucontext (1.3.3-r0)
+#10 2.752 (3/3) Installing gcompat (1.1.0-r4)
+#10 3.069 OK: 11.0 MiB in 21 packages
+#10 DONE 3.1s
+
+#12 [builder 2/8] WORKDIR /app
+#12 DONE 0.0s
+
+#13 [builder 3/8] COPY package.json package-lock.json ./
+#13 DONE 0.0s
+
+#14 [builder 4/8] COPY lib/opal/package.json ./lib/opal/
+#14 DONE 0.0s
+
+#15 [builder 5/8] RUN npm ci
+

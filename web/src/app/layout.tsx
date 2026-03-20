@@ -17,7 +17,6 @@ import {
 } from "@/lib/constants";
 import { Metadata } from "next";
 import { buildClientUrl } from "@/lib/utilsSS";
-import { Inter } from "next/font/google";
 import {
   EnterpriseSettings,
   ApplicationStatus,
@@ -28,7 +27,6 @@ import { getAuthTypeMetadataSS, getCurrentUserSS } from "@/lib/userSS";
 import { Suspense } from "react";
 import PostHogPageView from "./PostHogPageView";
 import Script from "next/script";
-import { Hanken_Grotesk } from "next/font/google";
 import { WebVitals } from "./web-vitals";
 import { ThemeProvider } from "next-themes";
 import CloudError from "@/components/errorPages/CloudErrorPage";
@@ -38,17 +36,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { fetchAppSidebarMetadata } from "@/lib/appSidebarSS";
 import StatsOverlayLoader from "@/components/dev/StatsOverlayLoader";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const hankenGrotesk = Hanken_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-hanken-grotesk",
-  display: "swap",
-});
+// `next/font/google` triggers build-time fetching of Google Fonts assets.
+// For Docker builds in restricted/offline environments, we avoid it entirely.
+// The actual typography falls back to `globals.css` (which already includes
+// Google Font imports and local font-face definitions).
+const inter = { variable: "" };
+const hankenGrotesk = { variable: "" };
 
 export async function generateMetadata(): Promise<Metadata> {
   let logoLocation = buildClientUrl("/onyx.ico");
@@ -70,27 +63,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export async function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'zh' }];
-}
-
-
 export const dynamic = "force-dynamic";
 
 export default async function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
 }) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-  
-  // ✅ 新增：验证 locale
-  if (!['en', 'zh'].includes(locale)) {
-    notFound();
-  }
+  // Root layout doesn't have locale in params - locale is handled by next-intl middleware
+  const locale = (await getLocale()) || 'en';
+  const messages = (await getMessages({ locale })) || {};
 
   const [combinedSettings, user, authTypeMetadata] = await Promise.all([
     fetchSettingsSS(),
@@ -103,7 +85,7 @@ export default async function RootLayout({
   const productGating =
     combinedSettings?.settings.application_status ?? ApplicationStatus.ACTIVE;
 
-  const getPageContent = async (content: React.ReactNode) => (
+  const getPageContent = (content: React.ReactNode) => (
     <html
       lang="locale"
       className={`${inter.variable} ${hankenGrotesk.variable}`}
@@ -150,8 +132,9 @@ export default async function RootLayout({
         >
           <div className="text-text min-h-screen bg-background">
             <TooltipProvider>
-              <NextIntlClientProvider messages={messages}>
-              <PHProvider>{content}</PHProvider>
+              <NextIntlClientProvider messages={messages} locale={locale}>
+                <PHProvider>{content}</PHProvider>
+              </NextIntlClientProvider>
             </TooltipProvider>
           </div>
         </ThemeProvider>

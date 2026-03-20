@@ -2,7 +2,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next-intl/client'; // ✅ 合并导入
+import { useRouter, usePathname } from 'next/navigation';
 
 export function LanguageSwitcher() {
   const locale = useLocale();
@@ -10,7 +10,8 @@ export function LanguageSwitcher() {
   const pathname = usePathname();
 
   const switchLang = (lang: string) => {
-    router.push(pathname, { locale: lang });
+    document.cookie = `NEXT_LOCALE=${lang};path=/;max-age=31536000`;
+    router.refresh();
   };
 
   return (

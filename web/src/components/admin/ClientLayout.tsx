@@ -22,9 +22,10 @@ export function ClientLayout({
 
   // Certain admin panels have their own custom sidebar.
   // For those pages, we skip rendering the default `AdminSidebar` and let those individual pages render their own.
-  const hasCustomSidebar =
-    pathname.startsWith("/admin/connectors") ||
-    pathname.startsWith("/admin/embeddings");
+  const hasCustomSidebar = pathname
+    ? pathname.startsWith("/admin/connectors") ||
+      pathname.startsWith("/admin/embeddings")
+    : false;
 
   return (
     <div className="h-screen w-screen flex overflow-hidden">

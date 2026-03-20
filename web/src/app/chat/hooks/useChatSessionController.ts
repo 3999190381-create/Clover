@@ -31,7 +31,7 @@ import { ChatInputBarHandle } from "../components/input/ChatInputBar";
 
 interface UseChatSessionControllerProps {
   existingChatSessionId: string | null;
-  searchParams: ReadonlyURLSearchParams;
+  searchParams?: ReadonlyURLSearchParams | null;
   filterManager: FilterManager;
   firstMessage?: string;
 
@@ -159,7 +159,7 @@ export function useChatSessionController({
 
         // If we're supposed to submit on initial load, then do that here
         if (
-          shouldSubmitOnLoad(searchParams) &&
+          shouldSubmitOnLoad(searchParams ?? null) &&
           !submitOnLoadPerformed.current
         ) {
           submitOnLoadPerformed.current = true;

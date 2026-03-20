@@ -17,8 +17,9 @@ import {
   TENANT_ID_COOKIE_NAME,
 } from "@/lib/constants";
 import Cookies from "js-cookie";
+import { Suspense } from "react";
 
-const ResetPasswordPage: React.FC = () => {
+const ResetPasswordContent: React.FC = () => {
   const { popup, setPopup } = usePopup();
   const [isWorking, setIsWorking] = useState(false);
   const searchParams = useSearchParams();
@@ -132,5 +133,13 @@ const ResetPasswordPage: React.FC = () => {
     </AuthFlowContainer>
   );
 };
+
+function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
 
 export default ResetPasswordPage;
