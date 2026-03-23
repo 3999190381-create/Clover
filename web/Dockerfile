@@ -19,6 +19,8 @@ COPY package.json package-lock.json ./
 COPY lib/opal/package.json ./lib/opal/
 
 # Install dependencies
+# Configure npm to use Chinese mirror for faster/reliable downloads in China
+RUN npm config set registry https://registry.npmmirror.com
 RUN npm ci
 
 # pull in source code / package.json / package-lock.json
@@ -67,14 +69,15 @@ ENV NEXT_PUBLIC_GTM_ENABLED=${NEXT_PUBLIC_GTM_ENABLED}
 ARG NEXT_PUBLIC_FORGOT_PASSWORD_ENABLED
 ENV NEXT_PUBLIC_FORGOT_PASSWORD_ENABLED=${NEXT_PUBLIC_FORGOT_PASSWORD_ENABLED}
 
+# UI language default when no NEXT_LOCALE cookie / no Accept-Language match (en | zh)
+ARG NEXT_PUBLIC_DEFAULT_LOCALE
+ENV NEXT_PUBLIC_DEFAULT_LOCALE=${NEXT_PUBLIC_DEFAULT_LOCALE}
+
 ARG NEXT_PUBLIC_INCLUDE_ERROR_POPUP_SUPPORT_LINK
 ENV NEXT_PUBLIC_INCLUDE_ERROR_POPUP_SUPPORT_LINK=${NEXT_PUBLIC_INCLUDE_ERROR_POPUP_SUPPORT_LINK}
 
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
-
-# Add NODE_OPTIONS argument
-ARG NODE_OPTIONS
 
 # Mock Google Fonts fetch during build (Docker has no internet access to fonts.googleapis.com)
 ENV __NEXT_FONT_GOOGLE_MOCKING__=1
@@ -95,7 +98,9 @@ RUN node -e "const fs=require('fs'); const p='src/app/layout.tsx'; const s=fs.re
 if (s.includes('disableGoogleFonts')) { console.error('FOUND disableGoogleFonts in '+p+' (stale build context)'); process.exit(1); } \
 if (/from\\s+['\\\"]next\\/font\\/google['\\\"]/.test(s)) { console.error('FOUND next/font/google import in '+p+' (stale build context)'); process.exit(1); } \
 console.log('layout.tsx font guards OK');"
-RUN NODE_OPTIONS="${NODE_OPTIONS}" npx next build --webpack
+# Use --experimental-fetch for Node.js 20+ compatibility
+# Increase heap size to 4GB to prevent OOM during build
+RUN NODE_OPTIONS="--experimental-fetch --max-old-space-size=4096" npx next build --webpack
 
 # Step 2. Production image, copy all the files and run next
 FROM base AS runner
@@ -161,6 +166,9 @@ ENV NEXT_PUBLIC_GTM_ENABLED=${NEXT_PUBLIC_GTM_ENABLED}
 
 ARG NEXT_PUBLIC_FORGOT_PASSWORD_ENABLED
 ENV NEXT_PUBLIC_FORGOT_PASSWORD_ENABLED=${NEXT_PUBLIC_FORGOT_PASSWORD_ENABLED}
+
+ARG NEXT_PUBLIC_DEFAULT_LOCALE
+ENV NEXT_PUBLIC_DEFAULT_LOCALE=${NEXT_PUBLIC_DEFAULT_LOCALE}
 
 ARG NEXT_PUBLIC_INCLUDE_ERROR_POPUP_SUPPORT_LINK
 ENV NEXT_PUBLIC_INCLUDE_ERROR_POPUP_SUPPORT_LINK=${NEXT_PUBLIC_INCLUDE_ERROR_POPUP_SUPPORT_LINK}

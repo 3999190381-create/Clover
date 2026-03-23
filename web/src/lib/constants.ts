@@ -11,6 +11,9 @@ export const HOST_URL = process.env.WEB_DOMAIN || "http://localhost:3000";
 
 export const INTERNAL_URL = process.env.INTERNAL_URL || "http://localhost:8080";
 
+/** Query on `/logo.svg` — bump when replacing `public/logo.svg` so browsers/CDN refresh */
+export const BRAND_LOGO_CACHE_KEY = "20260323";
+
 // Documentation URLs
 export const DOCS_BASE_URL = "https://docs.onyx.app";
 export const DOCS_ADMINS_PATH = `${DOCS_BASE_URL}/admins`;
