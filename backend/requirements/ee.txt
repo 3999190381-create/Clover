@@ -78,7 +78,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   tqdm
 cryptography==46.0.3
     # via pyjwt
-decorator==5.2.1
+decorator==5.3.1
     # via retry
 discord-py==2.4.0
     # via onyx
