@@ -519,7 +519,7 @@ langchainhub==0.1.21
     # via onyx
 langdetect==1.0.9
     # via unstructured
-langfuse==3.10.0
+langfuse==4.14.4
     # via onyx
 langsmith==0.3.45
     # via
