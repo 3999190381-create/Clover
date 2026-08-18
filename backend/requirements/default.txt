@@ -563,7 +563,7 @@ mako==1.2.4
     #   onyx
 mammoth==1.11.0
     # via markitdown
-markdown-it-py==4.0.0
+markdown-it-py==4.2.0
     # via rich
 markdownify==1.2.2
     # via markitdown
