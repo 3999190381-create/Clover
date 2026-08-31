@@ -8,8 +8,12 @@ import IconButton from "@/refresh-components/buttons/IconButton";
 import InputAvatar from "@/refresh-components/inputs/InputAvatar";
 import { cn } from "@/lib/utils";
 import { SvgCheckCircle, SvgEdit, SvgUser, SvgX } from "@opal/icons";
+import { useTranslations } from "next-intl";
 
 export default function NonAdminStep() {
+  const t = useTranslations("onboarding.steps");
+  const tName = useTranslations("onboarding.steps.name");
+  const tComplete = useTranslations("onboarding.steps.complete");
   const inputRef = useRef<HTMLInputElement>(null);
   const { user, refreshUser } = useUser();
   const [name, setName] = useState("");
@@ -49,7 +53,7 @@ export default function NonAdminStep() {
           <div className="flex items-center gap-1">
             <SvgCheckCircle className="w-4 h-4 stroke-status-success-05" />
             <Text as="p" text03 mainUiBody>
-              You're all set!
+              {tComplete("youreAllSet")}
             </Text>
           </div>
           <IconButton
@@ -71,17 +75,17 @@ export default function NonAdminStep() {
             </div>
             <div>
               <Text as="p" text04 mainUiAction>
-                What should Onyx call you?
+                {tName("whatShouldOnyxCallYou")}
               </Text>
               <Text as="p" text03 secondaryBody>
-                We will display this name in the app.
+                {tName("weWillDisplayThisName")}
               </Text>
             </div>
           </div>
           <div className="flex items-center justify-end gap-2">
             <InputTypeIn
               ref={inputRef}
-              placeholder="Your name"
+              placeholder={tName("yourName")}
               value={name || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setName(e.target.value)
@@ -95,7 +99,7 @@ export default function NonAdminStep() {
               className="w-[26%] min-w-40"
             />
             <Button disabled={name === ""} onClick={handleSave}>
-              Save
+              {tName("button")}
             </Button>
           </div>
         </div>

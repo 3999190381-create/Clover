@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 LABEL com.onyx.maintainer="founders@onyx.app"
 LABEL com.onyx.description="This image is the web/frontend container of Onyx which \
@@ -21,10 +21,18 @@ COPY lib/opal/package.json ./lib/opal/
 # Install dependencies
 # Configure npm to use Chinese mirror for faster/reliable downloads in China
 RUN npm config set registry https://registry.npmmirror.com
+# Enable proxy as fallback when npmmirror lacks certain packages
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
 RUN npm ci
 
 # pull in source code / package.json / package-lock.json
 COPY . .
+
+# Clean any stale .next cache from build context
+RUN rm -rf .next/cache
 
 # needed to get the `standalone` dir we expect later
 ENV NEXT_PRIVATE_STANDALONE=true
@@ -184,4 +192,5 @@ ENV ONYX_VERSION=${ONYX_VERSION}
 # If you want to run this without compose, specify the ports to
 # expose via cli
 
-CMD ["node", "server.js"]
+# Clean Next.js build cache before starting
+CMD sh -c "rm -rf .next/cache && node server.js"

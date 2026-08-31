@@ -11,8 +11,10 @@ import { SvgFolderPlus } from "@opal/icons";
 import Modal from "@/refresh-components/Modal";
 import InputTypeIn from "@/refresh-components/inputs/InputTypeIn";
 import { usePopup } from "@/components/admin/connectors/Popup";
+import { useTranslations } from "next-intl";
 
 export default function CreateProjectModal() {
+  const t = useTranslations("sidebar.project");
   const { createProject } = useProjectsContext();
   const modal = useModal();
   const route = useAppRouter();
@@ -30,7 +32,7 @@ export default function CreateProjectModal() {
     } catch (e) {
       setPopup({
         type: "error",
-        message: `Failed to create the project ${name}`,
+        message: t("createProjectFailed", { name }),
       });
     }
   }
@@ -45,25 +47,25 @@ export default function CreateProjectModal() {
         <Modal.Content width="sm">
           <Modal.Header
             icon={SvgFolderPlus}
-            title="Create New Project"
-            description="Use projects to organize your files and chats in one place, and add custom instructions for ongoing work."
+            title={t("createNewProject")}
+            description={t("createNewProjectDescription")}
             onClose={() => modal.toggle(false)}
           />
           <Modal.Body>
-            <InputLayouts.Vertical title="Project Name">
+            <InputLayouts.Vertical title={t("projectName")}>
               <InputTypeIn
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="What are you working on?"
+                placeholder={t("projectNamePlaceholder")}
                 showClearButton
               />
             </InputLayouts.Vertical>
           </Modal.Body>
           <Modal.Footer>
             <Button secondary onClick={() => modal.toggle(false)}>
-              Cancel
+              {t("cancel")}
             </Button>
-            <Button onClick={handleSubmit}>Create Project</Button>
+            <Button onClick={handleSubmit}>{t("createProject")}</Button>
           </Modal.Footer>
         </Modal.Content>
       </Modal>

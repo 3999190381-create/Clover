@@ -1,11 +1,12 @@
 // web/src/components/LanguageSwitcher.tsx
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 export function LanguageSwitcher() {
   const locale = useLocale();
+  const t = useTranslations("settings");
   const router = useRouter();
 
   const switchLang = (lang: string) => {
@@ -20,7 +21,7 @@ export function LanguageSwitcher() {
       value={locale}
       onChange={(e) => switchLang(e.target.value)}
       className="shrink-0 rounded-md border border-border px-2 py-1 text-sm bg-background text-text shadow-sm"
-      aria-label="Language"
+      aria-label={t("language")}
     >
       <option value="en">English</option>
       <option value="zh">中文</option>

@@ -622,7 +622,28 @@
     "projects": "项目",
     "adminPanel": "管理面板",
     "curatorPanel": "策展人面板",
-    "moveChatFailed": "移动聊天失败，请重试。"
+    "moveChatFailed": "移动聊天失败，请重试。",
+    "project": {
+      "createNewProject": "创建新项目",
+      "createNewProjectDescription": "使用项目将文件和对话组织在一个地方，并添加自定义指令以持续进行工作。",
+      "projectName": "项目名称",
+      "projectNamePlaceholder": "你在做什么项目？",
+      "cancel": "取消",
+      "createProject": "创建项目",
+      "createProjectFailed": "创建项目 {name} 失败"
+    },
+    "agents": {
+      "agentsAndAssistants": "代理与助手",
+      "customizeAiBehavior": "自定义 AI 行为和知识，以适应您和团队的使用场景。",
+      "newAgent": "新建代理",
+      "searchAgentsPlaceholder": "搜索代理...",
+      "allAgents": "全部代理",
+      "yourAgents": "你的代理",
+      "createdBy": "创建者",
+      "filterActions": "筛选操作...",
+      "featuredAgents": "精选代理",
+      "featuredAgentsDescription": "由您的团队精选"
+    }
   },
   "onboarding": {
     "stepProgress": "第 {current} 步，共 {total} 步",
@@ -633,6 +654,9 @@
       },
       "name": {
         "title": "我们先花点时间完成设置。",
+        "whatShouldOnyxCallYou": "Onyx 应该如何称呼你？",
+        "weWillDisplayThisName": "我们将在应用中显示此名称。",
+        "yourName": "你的名字",
         "button": "下一步"
       },
       "llm-setup": {
@@ -641,7 +665,8 @@
       },
       "complete": {
         "title": "设置完成，可查看可选配置或点击完成设置",
-        "button": "完成设置"
+        "button": "完成设置",
+        "youreAllSet": "一切就绪！"
       }
     },
     "final": {

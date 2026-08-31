@@ -1,112 +1,57 @@
-<<<<<<< HEAD
-<a name="readme-top"></a>
+# Clover
 
-<h2 align="center">
-    <a href="https://www.onyx.app/?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme"> <img width="50%" src="https://github.com/onyx-dot-app/onyx/blob/logo/OnyxLogoCropped.jpg?raw=true" /></a>
-</h2>
+Clover 是一个基于 Onyx/Danswer 二次开发的开源、自托管 AI 知识库与对话平台，面向个人和团队提供统一的企业知识检索、智能问答和 Agent 工作流能力。
 
-<p align="center">Open Source AI Platform</p>
+## 核心能力
 
-<p align="center">
-    <a href="https://discord.gg/TDJ59cGV2X" target="_blank">
-        <img src="https://img.shields.io/badge/discord-join-blue.svg?logo=discord&logoColor=white" alt="Discord" />
-    </a>
-    <a href="https://docs.onyx.app/?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme" target="_blank">
-        <img src="https://img.shields.io/badge/docs-view-blue" alt="Documentation" />
-    </a>
-    <a href="https://www.onyx.app/?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme" target="_blank">
-        <img src="https://img.shields.io/website?url=https://www.onyx.app&up_message=visit&up_color=blue" alt="Documentation" />
-    </a>
-    <a href="https://github.com/onyx-dot-app/onyx/blob/main/LICENSE" target="_blank">
-        <img src="https://img.shields.io/static/v1?label=license&message=MIT&color=blue" alt="License" />
-    </a>
-</p>
+- **RAG 与知识图谱检索**：对上传文件及外部数据源进行混合检索、重排序和知识关联。
+- **智能 Agent**：支持自定义系统指令、知识库、工具和外部操作，构建可复用的专业助手。
+- **联网搜索与深度研究**：接入 Web Search，通过多步检索生成带依据的研究型回答。
+- **MCP 与 Actions**：通过 MCP/OpenAPI 等方式连接外部系统和业务工具。
+- **多数据源连接器**：支持 40+ 常见应用和企业知识源的同步与权限继承。
+- **代码解释器与多模态能力**：执行代码、分析数据、生成图表和文件，并支持图像生成。
+- **团队协作与管理**：提供会话分享、反馈、用户管理、角色权限、用量统计和审计能力。
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/12516" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/12516" alt="onyx-dot-app/onyx | Trendshift" style="width: 250px; height: 55px;" />
-  </a>
-</p>
+## 中文化
 
+Web 前端已接入 `next-intl` 国际化框架，支持 English / 中文切换，中文语言包位于 `web/messages/zh.json`。主要聊天、知识库、Agent、搜索、MCP、管理后台、设置和引导流程均已提供中文词条；新增界面应优先通过语言包接入，避免硬编码 UI 文案。
 
-**[Onyx](https://www.onyx.app/?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme)** is a feature-rich, self-hostable Chat UI that works with any LLM. It is easy to deploy and can run in a completely airgapped environment.
+## 目录结构
 
-Onyx comes loaded with advanced features like Agents, Web Search, RAG, MCP, Deep Research, Connectors to 40+ knowledge sources, and more.
+```text
+backend/       后端 API、检索、连接器和任务服务
+web/           Next.js Web 前端与国际化资源
+desktop/       桌面端
+widget/        可嵌入式聊天组件
+deployment/    Docker、Kubernetes、Terraform 等部署配置
+```
 
-> [!TIP]
-> Run Onyx with one command (or see deployment section below):
-> ```
-> curl -fsSL https://raw.githubusercontent.com/onyx-dot-app/onyx/main/deployment/docker_compose/install.sh > install.sh && chmod +x install.sh && ./install.sh
-> ```
+## 快速开始
 
-****
+推荐使用 Docker Compose 启动本地开发环境。详细步骤请参考 `deployment/` 目录及 `web/README.md`。
 
-![Onyx Chat Silent Demo](https://github.com/onyx-dot-app/onyx/releases/download/v0.21.1/OnyxChatSilentDemo.gif)
+```bash
+cd deployment/docker_compose
+./install.sh
+```
 
+启动后可在浏览器访问 Web 前端，根据引导完成模型和数据源配置。
 
+## 开发与验证
 
-## ⭐ Features
-- **🤖 Custom Agents:** Build AI Agents with unique instructions, knowledge and actions.
-- **🌍 Web Search:** Browse the web with Google PSE, Exa, and Serper as well as an in-house scraper or Firecrawl.
-- **🔍 RAG:** Best in class hybrid-search + knowledge graph for uploaded files and ingested documents from connectors. 
-- **🔄 Connectors:** Pull knowledge, metadata, and access information from over 40 applications.
-- **🔬 Deep Research:** Get in depth answers with an agentic multi-step search.
-- **▶️ Actions & MCP:** Give AI Agents the ability to interact with external systems.
-- **💻 Code Interpreter:** Execute code to analyze data, render graphs and create files.
-- **🎨 Image Generation:** Generate images based on user prompts.
-- **👥 Collaboration:** Chat sharing, feedback gathering, user management, usage analytics, and more.
+```bash
+cd web
+npm ci
+npm run lint
+npm run build
+```
 
-Onyx works with all LLMs (like OpenAI, Anthropic, Gemini, etc.) and self-hosted LLMs (like Ollama, vLLM, etc.)
+提交新的 UI 时，请同步更新 `web/messages/en.json` 和 `web/messages/zh.json`，并在聊天、知识库、Agent、管理后台等主要页面验证中英文切换。
 
-To learn more about the features, check out our [documentation](https://docs.onyx.app/welcome?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme)!
+## 许可证
 
+本项目沿用上游项目的 MIT 许可证，详见 [LICENSE](LICENSE)。
 
+## 项目地址
 
-## 🚀 Deployment
-Onyx supports deployments in Docker, Kubernetes, Terraform, along with guides for major cloud providers.
-
-See guides below:
-- [Docker](https://docs.onyx.app/deployment/local/docker?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme) or [Quickstart](https://docs.onyx.app/deployment/getting_started/quickstart?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme) (best for most users)
-- [Kubernetes](https://docs.onyx.app/deployment/local/kubernetes?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme) (best for large teams)
-- [Terraform](https://docs.onyx.app/deployment/local/terraform?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme) (best for teams already using Terraform)
-- Cloud specific guides (best if specifically using [AWS EKS](https://docs.onyx.app/deployment/cloud/aws/eks?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme), [Azure VMs](https://docs.onyx.app/deployment/cloud/azure?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme), etc.)
-
-> [!TIP]  
-> **To try Onyx for free without deploying, check out [Onyx Cloud](https://cloud.onyx.app/signup?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme)**.
-
-
-
-## 🔍 Other Notable Benefits
-Onyx is built for teams of all sizes, from individual users to the largest global enterprises.
-
-- **Enterprise Search**: far more than simple RAG, Onyx has custom indexing and retrieval that remains performant and accurate for scales of up to tens of millions of documents.
-- **Security**: SSO (OIDC/SAML/OAuth2), RBAC, encryption of credentials, etc.
-- **Management UI**: different user roles such as basic, curator, and admin.
-- **Document Permissioning**: mirrors user access from external apps for RAG use cases.
-
-
-
-## 🚧 Roadmap
-To see ongoing and upcoming projects, check out our [roadmap](https://github.com/orgs/onyx-dot-app/projects/2)!
-
-
-
-## 📚 Licensing
-There are two editions of Onyx:
-
-- Onyx Community Edition (CE) is available freely under the MIT license.
-- Onyx Enterprise Edition (EE) includes extra features that are primarily useful for larger organizations.
-For feature details, check out [our website](https://www.onyx.app/pricing?utm_source=onyx_repo&utm_medium=github&utm_campaign=readme).
-
-
-
-## 👪 Community
-Join our open source community on **[Discord](https://discord.gg/TDJ59cGV2X)**!
-
-
-
-## 💡 Contributing
-Looking to contribute? Please check out the [Contribution Guide](CONTRIBUTING.md) for more details.
-=======
-# danswer
->>>>>>> 09c38a68d17cfab970441c507f13e5cee908d0c3
+[https://github.com/3999190381-create/Clover](https://github.com/3999190381-create/Clover)

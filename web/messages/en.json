@@ -554,7 +554,28 @@
     "projects": "Projects",
     "adminPanel": "Admin Panel",
     "curatorPanel": "Curator Panel",
-    "moveChatFailed": "Failed to move chat. Please try again."
+    "moveChatFailed": "Failed to move chat. Please try again.",
+    "project": {
+      "createNewProject": "Create New Project",
+      "createNewProjectDescription": "Use projects to organize your files and chats in one place, and add custom instructions for ongoing work.",
+      "projectName": "Project Name",
+      "projectNamePlaceholder": "What are you working on?",
+      "cancel": "Cancel",
+      "createProject": "Create Project",
+      "createProjectFailed": "Failed to create the project {name}"
+    },
+    "agents": {
+      "agentsAndAssistants": "Agents & Assistants",
+      "customizeAiBehavior": "Customize AI behavior and knowledge for you and your team's use cases.",
+      "newAgent": "New Agent",
+      "searchAgentsPlaceholder": "Search agents...",
+      "allAgents": "All Agents",
+      "yourAgents": "Your Agents",
+      "createdBy": "Created by",
+      "filterActions": "Filter actions...",
+      "featuredAgents": "Featured Agents",
+      "featuredAgentsDescription": "Curated by your team"
+    }
   },
   "onboarding": {
     "stepProgress": "Step {current} of {total}",
@@ -565,6 +586,9 @@
       },
       "name": {
         "title": "Let's take a moment to get you set up.",
+        "whatShouldOnyxCallYou": "What should Onyx call you?",
+        "weWillDisplayThisName": "We will display this name in the app.",
+        "yourName": "Your name",
         "button": "Next"
       },
       "llm-setup": {
@@ -573,7 +597,8 @@
       },
       "complete": {
         "title": "You're all set, review the optional settings or click Finish Setup",
-        "button": "Finish Setup"
+        "button": "Finish Setup",
+        "youreAllSet": "You're all set!"
       }
     },
     "final": {

@@ -31,6 +31,7 @@ import {
   SvgUser,
 } from "@opal/icons";
 import useOnMount from "@/hooks/useOnMount";
+import { useTranslations } from "next-intl";
 
 interface AgentsSectionProps {
   title: string;
@@ -63,6 +64,7 @@ function AgentsSection({ title, description, agents }: AgentsSectionProps) {
 }
 
 export default function AgentsNavigationPage() {
+  const t = useTranslations("sidebar.agents");
   const { agents } = useAgents();
   const [creatorFilterOpen, setCreatorFilterOpen] = useState(false);
   const [actionsFilterOpen, setActionsFilterOpen] = useState(false);
@@ -425,12 +427,12 @@ export default function AgentsNavigationPage() {
     >
       <SettingsLayouts.Header
         icon={SvgOnyxOctagon}
-        title="Agents & Assistants"
-        description="Customize AI behavior and knowledge for you and your team’s use cases."
+        title={t("agentsAndAssistants")}
+        description={t("customizeAiBehavior")}
         rightChildren={
           <div data-testid="AgentsPage/new-agent-button">
             <Button href="/chat/agents/create" leftIcon={SvgPlus}>
-              New Agent
+              {t("newAgent")}
             </Button>
           </div>
         }
@@ -440,7 +442,7 @@ export default function AgentsNavigationPage() {
             <div className="flex-[2]">
               <InputTypeIn
                 ref={searchInputRef}
-                placeholder="Search agents..."
+                placeholder={t("searchAgentsPlaceholder")}
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 leftSearchIcon
@@ -452,8 +454,8 @@ export default function AgentsNavigationPage() {
                 onValueChange={(value) => setActiveTab(value as "all" | "your")}
               >
                 <Tabs.List>
-                  <Tabs.Trigger value="all">All Agents</Tabs.Trigger>
-                  <Tabs.Trigger value="your">Your Agents</Tabs.Trigger>
+                  <Tabs.Trigger value="all">{t("allAgents")}</Tabs.Trigger>
+                  <Tabs.Trigger value="your">{t("yourAgents")}</Tabs.Trigger>
                 </Tabs.List>
               </Tabs>
             </div>
@@ -478,7 +480,7 @@ export default function AgentsNavigationPage() {
                   {[
                     <InputTypeIn
                       key="created-by"
-                      placeholder="Created by..."
+                      placeholder={t("createdBy")}
                       variant="internal"
                       leftSearchIcon
                       value={creatorSearchQuery}
@@ -555,7 +557,7 @@ export default function AgentsNavigationPage() {
                   {[
                     <InputTypeIn
                       key="actions"
-                      placeholder="Filter actions..."
+                      placeholder={t("filterActions")}
                       variant="internal"
                       leftSearchIcon
                       value={actionsSearchQuery}
@@ -655,11 +657,11 @@ export default function AgentsNavigationPage() {
         ) : (
           <>
             <AgentsSection
-              title="Featured Agents"
-              description="Curated by your team"
+              title={t("featuredAgents")}
+              description={t("featuredAgentsDescription")}
               agents={featuredAgents}
             />
-            <AgentsSection title="All Agents" agents={allAgents} />
+            <AgentsSection title={t("allAgents")} agents={allAgents} />
             <CounterSeparator
               count={agentCount}
               text={agentCount === 1 ? "Agent" : "Agents"}

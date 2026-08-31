@@ -2,10 +2,10 @@ import { defineRouting } from "next-intl/routing";
 
 const supportedLocales = ["en", "zh"] as const;
 
-/** Set `NEXT_PUBLIC_DEFAULT_LOCALE=zh` at build time (e.g. Docker ARG) for Chinese-first deployments. */
+/** Chinese is the default for Clover; set NEXT_PUBLIC_DEFAULT_LOCALE=en to opt into English. */
 function resolveDefaultLocale(): (typeof supportedLocales)[number] {
   const v = process.env.NEXT_PUBLIC_DEFAULT_LOCALE?.toLowerCase().trim();
-  return v === "zh" ? "zh" : "en";
+  return v === "en" ? "en" : "zh";
 }
 
 export const routing = defineRouting({
