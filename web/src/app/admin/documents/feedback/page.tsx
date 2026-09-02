@@ -7,7 +7,9 @@ import { numPages, numToDisplay } from "./constants";
 import { AdminPageTitle } from "@/components/admin/Title";
 import Title from "@/components/ui/title";
 import { SvgThumbsUp } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 const Main = () => {
+  const isChinese = useLanguage().language === "zh";
   const {
     data: mostLikedDocuments,
     isLoading: isMostLikedDocumentsLoading,
@@ -28,7 +30,7 @@ const Main = () => {
   };
 
   if (isMostLikedDocumentsLoading || isMostLikedDocumentLoading) {
-    return <LoadingAnimation text="Loading" />;
+    return <LoadingAnimation text={isChinese ? "加载中" : "Loading"} />;
   }
 
   if (
@@ -39,7 +41,7 @@ const Main = () => {
   ) {
     return (
       <div className="text-red-600">
-        Error loading documents -{" "}
+        {isChinese ? "加载文档失败 - " : "Error loading documents - "}{" "}
         {mostDislikedDocumentsError || mostLikedDocumentsError}
       </div>
     );
@@ -47,10 +49,10 @@ const Main = () => {
 
   return (
     <div>
-      <Title className="mb-2">Most Liked Documents</Title>
+      <Title className="mb-2">{isChinese ? "最受好评的文档" : "Most Liked Documents"}</Title>
       <DocumentFeedbackTable documents={mostLikedDocuments} refresh={refresh} />
 
-      <Title className="mb-2 mt-6">Most Disliked Documents</Title>
+      <Title className="mb-2 mt-6">{isChinese ? "最受差评的文档" : "Most Disliked Documents"}</Title>
       <DocumentFeedbackTable
         documents={mostDislikedDocuments}
         refresh={refresh}

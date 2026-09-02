@@ -80,6 +80,8 @@ const ADMIN_LABELS_ZH: Record<string, string> = {
   "Usage Statistics": "使用统计",
   "Query History": "查询历史",
   "Custom Analytics": "自定义分析",
+  "Evaluation & Demo": "评测与演示",
+  "Complex Query Demo": "复杂问题演示",
   Settings: "设置",
   "Workspace Settings": "工作区设置",
   "Appearance & Theming": "外观与主题",
@@ -319,6 +321,16 @@ const collections = (
             ]
           : []),
         {
+          name: "Evaluation & Demo",
+          items: [
+            {
+              name: "Complex Query Demo",
+              icon: SvgActivity,
+              link: "/admin/evaluation",
+            },
+          ],
+        },
+        {
           name: "Settings",
           items: [
             {
@@ -403,7 +415,9 @@ export default function AdminSidebar({
           <div className="flex flex-col gap-2">
             {settings.webVersion && (
               <Text as="p" text02 secondaryBody className="px-2">
-                {`Clover version: ${settings.webVersion}`}
+                {isChinese
+                  ? `Clover 版本：${settings.webVersion}`
+                  : `Clover version: ${settings.webVersion}`}
               </Text>
             )}
             <UserAvatarPopover />

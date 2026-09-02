@@ -18,6 +18,7 @@ import { HoverPopup } from "@/components/HoverPopup";
 import Checkbox from "@/refresh-components/inputs/Checkbox";
 import { ScoreSection } from "../ScoreEditor";
 import { truncateString } from "@/lib/utils";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const IsVisibleSection = ({
   document,
@@ -26,6 +27,7 @@ const IsVisibleSection = ({
   document: DocumentBoostStatus;
   onUpdate: (response: Response) => void;
 }) => {
+  const isChinese = useLanguage().language === "zh";
   return (
     <HoverPopup
       mainContent={
@@ -40,7 +42,7 @@ const IsVisibleSection = ({
             }}
             className="flex text-error cursor-pointer hover:bg-accent-background-hovered py-1 px-2 w-fit rounded-full"
           >
-            <div className="select-none">Hidden</div>
+            <div className="select-none">{isChinese ? "已隐藏" : "Hidden"}</div>
             <div className="ml-1 my-auto">
               <Checkbox checked={false} />
             </div>
@@ -56,7 +58,7 @@ const IsVisibleSection = ({
             }}
             className="flex cursor-pointer hover:bg-accent-background-hovered py-1 px-2 w-fit rounded-full"
           >
-            <div className="my-auto select-none">Visible</div>
+            <div className="my-auto select-none">{isChinese ? "可见" : "Visible"}</div>
             <div className="ml-1 my-auto">
               <Checkbox checked={true} />
             </div>
@@ -67,12 +69,12 @@ const IsVisibleSection = ({
         <div className="text-xs">
           {document.hidden ? (
             <div className="flex">
-              <FiEye className="my-auto mr-1" /> Unhide
+            <FiEye className="my-auto mr-1" /> {isChinese ? "取消隐藏" : "Unhide"}
             </div>
           ) : (
             <div className="flex">
               <FiEyeOff className="my-auto mr-1" />
-              Hide
+              {isChinese ? "隐藏" : "Hide"}
             </div>
           )}
         </div>
@@ -91,15 +93,16 @@ export const DocumentFeedbackTable = ({
 }) => {
   const [page, setPage] = useState(1);
   const { popup, setPopup } = usePopup();
+  const isChinese = useLanguage().language === "zh";
 
   return (
     <div>
       <Table className="overflow-visible">
         <TableHeader>
           <TableRow>
-            <TableHead>Document Name</TableHead>
-            <TableHead>Is Searchable?</TableHead>
-            <TableHead>Score</TableHead>
+            <TableHead>{isChinese ? "文档名称" : "Document Name"}</TableHead>
+            <TableHead>{isChinese ? "可搜索？" : "Is Searchable?"}</TableHead>
+            <TableHead>{isChinese ? "评分" : "Score"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -126,9 +129,7 @@ export const DocumentFeedbackTable = ({
                           refresh();
                         } else {
                           setPopup({
-                            message: `Error updating hidden status - ${getErrorMsg(
-                              response
-                            )}`,
+                            message: `${isChinese ? "更新隐藏状态失败" : "Error updating hidden status"} - ${getErrorMsg(response)}`,
                             type: "error",
                           });
                         }
