@@ -41,6 +41,7 @@ import {
 import CreateButton from "@/refresh-components/buttons/CreateButton";
 import { SourceIcon } from "@/components/SourceIcon";
 import Link from "next/link";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const numToDisplay = 50;
 
@@ -54,6 +55,7 @@ const FederatedConnectorTitle = ({
   showMetadata?: boolean;
   isLink?: boolean;
 }) => {
+  const isChinese = useLanguage().language === "zh";
   const sourceType = federatedConnector.source.replace(/^federated_/, "");
 
   const mainSectionClassName = "text-blue-500 dark:text-blue-100 flex w-fit";
@@ -64,7 +66,7 @@ const FederatedConnectorTitle = ({
         {federatedConnector.name}
       </div>
       <Badge variant="outline" className="text-xs ml-2">
-        Federated
+        {isChinese ? "联邦" : "Federated"}
       </Badge>
     </>
   );
@@ -109,6 +111,7 @@ const EditRow = ({
   isEditable: boolean;
 }) => {
   const router = useRouter();
+  const isChinese = useLanguage().language === "zh";
 
   if (!isEditable) {
     return (
@@ -143,8 +146,9 @@ const EditRow = ({
             <TooltipContent width="max-w-sm">
               <div className="flex break-words break-keep whitespace-pre-wrap items-start">
                 <InfoIcon className="mr-2 mt-0.5" />
-                Cannot update while syncing! Wait for the sync to finish, then
-                try again.
+                {isChinese
+                  ? "同步期间无法更新，请等待同步完成后重试。"
+                  : "Cannot update while syncing! Wait for the sync to finish, then try again."}
               </div>
             </TooltipContent>
           )}
@@ -170,6 +174,7 @@ const DocumentSetTable = ({
   setPopup,
 }: DocumentFeedbackTableProps) => {
   const [page, setPage] = useState(1);
+  const isChinese = useLanguage().language === "zh";
 
   // sort by name for consistent ordering
   documentSets.sort((a, b) => {
@@ -191,15 +196,15 @@ const DocumentSetTable = ({
 
   return (
     <div>
-      <Title>Existing Document Sets</Title>
+      <Title>{isChinese ? "已有文档集" : "Existing Document Sets"}</Title>
       <Table className="overflow-visible mt-2">
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Connectors</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Public</TableHead>
-            <TableHead>Delete</TableHead>
+            <TableHead>{isChinese ? "名称" : "Name"}</TableHead>
+            <TableHead>{isChinese ? "连接器" : "Connectors"}</TableHead>
+            <TableHead>{isChinese ? "状态" : "Status"}</TableHead>
+            <TableHead>{isChinese ? "可见性" : "Public"}</TableHead>
+            <TableHead>{isChinese ? "删除" : "Delete"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -239,7 +244,7 @@ const DocumentSetTable = ({
                                   iconSize={16}
                                 />
                                 <div className="ml-1 my-auto text-xs font-medium truncate">
-                                  {ccPairSummary.name || "Unnamed"}
+                                  {ccPairSummary.name || (isChinese ? "未命名" : "Unnamed")}
                                 </div>
                               </div>
                             </div>
@@ -284,18 +289,18 @@ const DocumentSetTable = ({
                   <TableCell>
                     {documentSet.is_up_to_date ? (
                       <Badge variant="success" icon={FiCheckCircle}>
-                        Up to Date
+                        {isChinese ? "已是最新" : "Up to Date"}
                       </Badge>
                     ) : documentSet.cc_pair_summaries.length > 0 ||
                       (documentSet.federated_connector_summaries &&
                         documentSet.federated_connector_summaries.length >
                           0) ? (
                       <Badge variant="in_progress" icon={FiClock}>
-                        Syncing
+                        {isChinese ? "同步中" : "Syncing"}
                       </Badge>
                     ) : (
                       <Badge variant="destructive" icon={FiAlertTriangle}>
-                        Deleting
+                        {isChinese ? "删除中" : "Deleting"}
                       </Badge>
                     )}
                   </TableCell>
@@ -305,14 +310,14 @@ const DocumentSetTable = ({
                         variant={isEditable ? "success" : "default"}
                         icon={FiUnlock}
                       >
-                        Public
+                        {isChinese ? "公开" : "Public"}
                       </Badge>
                     ) : (
                       <Badge
                         variant={isEditable ? "private" : "default"}
                         icon={FiLock}
                       >
-                        Private
+                        {isChinese ? "私有" : "Private"}
                       </Badge>
                     )}
                   </TableCell>
@@ -325,13 +330,17 @@ const DocumentSetTable = ({
                           );
                           if (response.ok) {
                             setPopup({
-                              message: `Document set "${documentSet.name}" scheduled for deletion`,
+                              message: isChinese
+                                ? `文档集“${documentSet.name}”已安排删除`
+                                : `Document set "${documentSet.name}" scheduled for deletion`,
                               type: "success",
                             });
                           } else {
                             const errorMsg = (await response.json()).detail;
                             setPopup({
-                              message: `Failed to schedule document set for deletion - ${errorMsg}`,
+                              message: isChinese
+                                ? `安排删除文档集失败 - ${errorMsg}`
+                                : `Failed to schedule document set for deletion - ${errorMsg}`,
                               type: "error",
                             });
                           }
@@ -363,6 +372,7 @@ const DocumentSetTable = ({
 };
 
 const Main = () => {
+  const isChinese = useLanguage().language === "zh";
   const { popup, setPopup } = usePopup();
   const {
     data: documentSets,
@@ -387,27 +397,28 @@ const Main = () => {
   }
 
   if (documentSetsError || !documentSets) {
-    return <div>Error: {documentSetsError}</div>;
+    return <div>{isChinese ? "加载文档集失败：" : "Error: "}{documentSetsError}</div>;
   }
 
   if (editableDocumentSetsError || !editableDocumentSets) {
-    return <div>Error: {editableDocumentSetsError}</div>;
+    return <div>{isChinese ? "加载可编辑文档集失败：" : "Error: "}{editableDocumentSetsError}</div>;
   }
 
   return (
     <div className="mb-8">
       {popup}
       <Text className="mb-3">
-        <b>Document Sets</b> allow you to group logically connected documents
-        into a single bundle. These can then be used as a filter when performing
-        searches to control the scope of information Onyx searches over.
+        <b>{isChinese ? "文档集" : "Document Sets"}</b>{" "}
+        {isChinese
+          ? "用于将逻辑相关的文档归入同一集合。搜索时可将文档集作为过滤条件，限定 Clover 的搜索范围。"
+          : "allow you to group logically connected documents into a single bundle. These can then be used as a filter when performing searches to control the scope of information Clover searches over."}
       </Text>
 
       <div className="mb-3"></div>
 
       <div className="flex mb-6">
         <CreateButton href="/admin/documents/sets/new">
-          New Document Set
+          {isChinese ? "新建文档集" : "New Document Set"}
         </CreateButton>
       </div>
 
