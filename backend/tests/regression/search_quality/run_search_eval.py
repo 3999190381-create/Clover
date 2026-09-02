@@ -39,6 +39,9 @@ load_dotenv(env_path)
 
 from ee.onyx.server.query_and_chat.models import SearchFullResponse
 from ee.onyx.server.query_and_chat.models import SendSearchQueryRequest
+from onyx.server.query_and_chat.models import AdminSearchRequest
+from onyx.server.query_and_chat.models import AdminSearchResponse
+from onyx.chat.models import ChatFullResponse
 from onyx.configs.app_configs import POSTGRES_API_SERVER_POOL_OVERFLOW
 from onyx.configs.app_configs import POSTGRES_API_SERVER_POOL_SIZE
 from onyx.configs.app_configs import AUTH_TYPE
@@ -55,6 +58,7 @@ from tests.regression.search_quality.models import CombinedMetrics
 from tests.regression.search_quality.models import EvalConfig
 from tests.regression.search_quality.models import OneshotQAResult
 from tests.regression.search_quality.models import TestQuery
+from tests.regression.search_quality.metrics import calculate_context_metrics
 from tests.regression.search_quality.utils import compute_overall_scores
 from tests.regression.search_quality.utils import find_document_id
 from tests.regression.search_quality.utils import get_federated_sources
@@ -96,12 +100,16 @@ class SearchAnswerAnalyzer:
                 worst_rank=1,
                 average_rank=0.0,
                 top_k_accuracy={k: 0.0 for k in TOP_K_LIST},
-                response_relevancy=0.0,
+                answer_relevancy=0.0,
                 faithfulness=0.0,
-                factual_correctness=0.0,
-                n_response_relevancy=0,
+                answer_correctness=0.0,
+                n_answer_relevancy=0,
                 n_faithfulness=0,
-                n_factual_correctness=0,
+                n_answer_correctness=0,
+                context_precision=0.0,
+                context_recall=0.0,
+                context_f1=0.0,
+                n_context=0,
                 average_time_taken=0.0,
             )
         )
@@ -186,11 +194,14 @@ class SearchAnswerAnalyzer:
                     "worst_rank",
                     "avg_rank",
                     *[f"top_{k}_accuracy" for k in TOP_K_LIST],
+                    "avg_context_precision",
+                    "avg_context_recall",
+                    "avg_context_f1",
                     *(
                         [
-                            "avg_response_relevancy",
+                            "avg_answer_relevancy",
                             "avg_faithfulness",
-                            "avg_factual_correctness",
+                            "avg_answer_correctness",
                         ]
                         if not self.config.search_only
                         else []
@@ -224,16 +235,20 @@ class SearchAnswerAnalyzer:
                     )
                     for k, acc in metrics.top_k_accuracy.items():
                         print(f"  top-{k} accuracy: {acc:.1f}%")
+                if metrics.n_context > 0:
+                    print(f"  context precision: {metrics.context_precision:.2f}")
+                    print(f"  context recall: {metrics.context_recall:.2f}")
+                    print(f"  context F1: {metrics.context_f1:.2f}")
                 if not self.config.search_only:
-                    if metrics.n_response_relevancy > 0:
+                    if metrics.n_answer_relevancy > 0:
                         print(
-                            f"  average response relevancy: {metrics.response_relevancy:.2f}"
+                            f"  average answer relevancy: {metrics.answer_relevancy:.2f}"
                         )
                     if metrics.n_faithfulness > 0:
                         print(f"  average faithfulness: {metrics.faithfulness:.2f}")
-                    if metrics.n_factual_correctness > 0:
+                    if metrics.n_answer_correctness > 0:
                         print(
-                            f"  average factual correctness: {metrics.factual_correctness:.2f}"
+                            f"  average answer correctness: {metrics.answer_correctness:.2f}"
                         )
                 search_score, answer_score = compute_overall_scores(metrics)
                 print(f"  search score: {search_score:.1f}")
@@ -251,11 +266,14 @@ class SearchAnswerAnalyzer:
                         worst_rank or "",
                         f"{avg_rank:.2f}" if avg_rank is not None else "",
                         *[f"{acc:.1f}" for acc in metrics.top_k_accuracy.values()],
+                        f"{metrics.context_precision:.2f}" if metrics.n_context > 0 else "",
+                        f"{metrics.context_recall:.2f}" if metrics.n_context > 0 else "",
+                        f"{metrics.context_f1:.2f}" if metrics.n_context > 0 else "",
                         *(
                             [
                                 (
-                                    f"{metrics.response_relevancy:.2f}"
-                                    if metrics.n_response_relevancy > 0
+                                    f"{metrics.answer_relevancy:.2f}"
+                                    if metrics.n_answer_relevancy > 0
                                     else ""
                                 ),
                                 (
@@ -264,8 +282,8 @@ class SearchAnswerAnalyzer:
                                     else ""
                                 ),
                                 (
-                                    f"{metrics.factual_correctness:.2f}"
-                                    if metrics.n_factual_correctness > 0
+                                    f"{metrics.answer_correctness:.2f}"
+                                    if metrics.n_answer_correctness > 0
                                     else ""
                                 ),
                             ]
@@ -448,6 +466,32 @@ class SearchAnswerAnalyzer:
                 timeout=self.config.request_timeout,
             )
             time_taken = time.monotonic() - start_time
+            # Some Clover builds do not expose the EE search router. In that
+            # case the current admin search endpoint provides the same ranked
+            # document list and is available in the standard API.
+            if response.status_code == 404:
+                fallback_request = AdminSearchRequest(
+                    query=query,
+                    filters=filters,
+                )
+                response = requests.post(
+                    url=f"{self.config.api_url}/admin/search",
+                    json=fallback_request.model_dump(mode="json"),
+                    headers=headers,
+                    timeout=self.config.request_timeout,
+                )
+                response.raise_for_status()
+                fallback_result = AdminSearchResponse.model_validate(response.json())
+                top_documents = [
+                    SavedSearchDoc.from_search_doc(doc)
+                    for doc in fallback_result.documents[: self.config.max_search_results]
+                ]
+                if top_documents:
+                    return OneshotQAResult(
+                        time_taken=time.monotonic() - start_time,
+                        top_documents=top_documents,
+                        answer=None,
+                    )
             response.raise_for_status()
             result = SearchFullResponse.model_validate(response.json())
 
@@ -470,6 +514,69 @@ class SearchAnswerAnalyzer:
                 else ""
             )
         raise RuntimeError(f"Search returned no documents for query {query}")
+
+    @retry(tries=3, delay=1, backoff=2)
+    def _perform_answer(self, query: str) -> OneshotQAResult:
+        """Generate an answer through the same non-streaming chat API used by the UI."""
+        response = None
+        try:
+            headers = GENERAL_HEADERS.copy()
+            if AUTH_TYPE != AuthType.DISABLED:
+                headers["Authorization"] = f"Bearer {os.environ.get('ONYX_API_KEY')}"
+
+            start_time = time.monotonic()
+            response = requests.post(
+                url=f"{self.config.api_url}/chat/send-chat-message",
+                json={
+                    "message": query,
+                    "stream": False,
+                    "include_citations": True,
+                },
+                headers=headers,
+                timeout=self.config.request_timeout,
+            )
+            time_taken = time.monotonic() - start_time
+            response.raise_for_status()
+            result = ChatFullResponse.model_validate(response.json())
+            if result.error_msg:
+                raise RuntimeError(result.error_msg)
+            answer_result = OneshotQAResult(
+                time_taken=time_taken,
+                top_documents=[
+                    SavedSearchDoc.from_search_doc(doc)
+                    for doc in result.top_documents
+                ],
+                answer=result.answer_citationless or result.answer,
+            )
+            # The endpoint creates a fresh session when no session ID is sent.
+            # Remove it so evaluation runs do not clutter normal chat history.
+            if result.chat_session_id is not None:
+                try:
+                    cleanup_response = requests.delete(
+                        url=(
+                            f"{self.config.api_url}/chat/delete-chat-session/"
+                            f"{result.chat_session_id}"
+                        ),
+                        params={"hard_delete": "true"},
+                        headers=headers,
+                        timeout=self.config.request_timeout,
+                    )
+                    cleanup_response.raise_for_status()
+                except RequestException as cleanup_error:
+                    logger.warning(
+                        "Could not clean up evaluation chat session %s: %s",
+                        result.chat_session_id,
+                        cleanup_error,
+                    )
+            return answer_result
+        except (RequestException, ValueError) as e:
+            detail = ""
+            if response is not None:
+                try:
+                    detail = f" Response: {response.text[:500]}"
+                except Exception:
+                    pass
+            raise RuntimeError(f"Answer generation failed for query '{query}': {e}.{detail}") from e
 
     def _run_and_analyze_one(self, test_case: TestQuery, total: int) -> AnalysisSummary:
         result = self._perform_search(test_case.question)
@@ -500,18 +607,36 @@ class SearchAnswerAnalyzer:
         # get the search contents
         retrieved = search_docs_to_doc_contexts(result.top_documents, self.tenant_id)
 
+        # Deterministic retrieval metrics. These are document-level metrics;
+        # duplicate chunks from the same document count once.
+        context_precision, context_recall, context_f1 = calculate_context_metrics(
+            (doc.document_id for doc in result.top_documents), ground_truths
+        )
+
         # do answer evaluation
-        response_relevancy: float | None = None
+        answer_relevancy: float | None = None
         faithfulness: float | None = None
-        factual_correctness: float | None = None
-        contexts = [c.content for c in retrieved[: self.config.max_answer_context]]
+        answer_correctness: float | None = None
+        answer_contexts = retrieved[: self.config.max_answer_context]
+        contexts = [context.content for context in answer_contexts]
         if not self.config.search_only:
-            if result.answer is None:
-                logger.error(
-                    "No answer found for query: %s, skipping answer evaluation",
-                    test_case.question,
-                )
-            else:
+            try:
+                answer_result = self._perform_answer(test_case.question)
+                result.answer = answer_result.answer
+                # Evaluate the answer against the context returned by the chat
+                # flow (which can differ from the standalone search endpoint).
+                if answer_result.top_documents:
+                    answer_retrieved = search_docs_to_doc_contexts(
+                        answer_result.top_documents, self.tenant_id
+                    )
+                    answer_contexts = answer_retrieved[
+                        : self.config.max_answer_context
+                    ]
+                    contexts = [context.content for context in answer_contexts]
+            except Exception as e:
+                logger.error("Error generating answer for query %s: %s", test_case.question, e)
+
+            if result.answer is not None:
                 try:
                     ragas_result = ragas_evaluate(
                         question=test_case.question,
@@ -519,11 +644,9 @@ class SearchAnswerAnalyzer:
                         contexts=contexts,
                         reference_answer=test_case.ground_truth_response,
                     ).scores[0]
-                    response_relevancy = ragas_result["answer_relevancy"]
+                    answer_relevancy = ragas_result["answer_relevancy"]
                     faithfulness = ragas_result["faithfulness"]
-                    factual_correctness = ragas_result.get(
-                        "factual_correctness(mode=recall)"
-                    )
+                    answer_correctness = ragas_result.get("answer_correctness")
                 except Exception as e:
                     logger.error(
                         "Error evaluating answer for query %s: %s",
@@ -539,11 +662,15 @@ class SearchAnswerAnalyzer:
             rank=rank,
             total_results=len(result.top_documents),
             ground_truth_count=len(test_case.ground_truth_docids),
+            context_precision=context_precision,
+            context_recall=context_recall,
+            context_f1=context_f1,
             answer=result.answer,
-            response_relevancy=response_relevancy,
+            answer_relevancy=answer_relevancy,
             faithfulness=faithfulness,
-            factual_correctness=factual_correctness,
+            answer_correctness=answer_correctness,
             retrieved=retrieved,
+            answer_contexts=answer_contexts,
             time_taken=result.time_taken,
         )
         with self._lock:
@@ -569,17 +696,22 @@ class SearchAnswerAnalyzer:
                 for k in TOP_K_LIST:
                     self.metrics[cat].top_k_accuracy[k] += int(rank <= k)
 
+            self.metrics[cat].context_precision += result.context_precision
+            self.metrics[cat].context_recall += result.context_recall
+            self.metrics[cat].context_f1 += result.context_f1
+            self.metrics[cat].n_context += 1
+
             if self.config.search_only:
                 continue
-            if result.response_relevancy is not None:
-                self.metrics[cat].response_relevancy += result.response_relevancy
-                self.metrics[cat].n_response_relevancy += 1
+            if result.answer_relevancy is not None:
+                self.metrics[cat].answer_relevancy += result.answer_relevancy
+                self.metrics[cat].n_answer_relevancy += 1
             if result.faithfulness is not None:
                 self.metrics[cat].faithfulness += result.faithfulness
                 self.metrics[cat].n_faithfulness += 1
-            if result.factual_correctness is not None:
-                self.metrics[cat].factual_correctness += result.factual_correctness
-                self.metrics[cat].n_factual_correctness += 1
+            if result.answer_correctness is not None:
+                self.metrics[cat].answer_correctness += result.answer_correctness
+                self.metrics[cat].n_answer_correctness += 1
 
     def _aggregate_metrics(self) -> None:
         for cat in self.metrics:
@@ -592,14 +724,19 @@ class SearchAnswerAnalyzer:
                 self.metrics[cat].top_k_accuracy[k] /= total
                 self.metrics[cat].top_k_accuracy[k] *= 100
 
+            if (n := self.metrics[cat].n_context) > 0:
+                self.metrics[cat].context_precision /= n
+                self.metrics[cat].context_recall /= n
+                self.metrics[cat].context_f1 /= n
+
             if self.config.search_only:
                 continue
-            if (n := self.metrics[cat].n_response_relevancy) > 0:
-                self.metrics[cat].response_relevancy /= n
+            if (n := self.metrics[cat].n_answer_relevancy) > 0:
+                self.metrics[cat].answer_relevancy /= n
             if (n := self.metrics[cat].n_faithfulness) > 0:
                 self.metrics[cat].faithfulness /= n
-            if (n := self.metrics[cat].n_factual_correctness) > 0:
-                self.metrics[cat].factual_correctness /= n
+            if (n := self.metrics[cat].n_answer_correctness) > 0:
+                self.metrics[cat].answer_correctness /= n
 
 
 def run_search_eval(

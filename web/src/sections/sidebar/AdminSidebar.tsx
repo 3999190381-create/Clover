@@ -46,6 +46,49 @@ import {
 } from "@opal/icons";
 import SvgMcp from "@opal/icons/mcp";
 import UserAvatarPopover from "@/sections/sidebar/UserAvatarPopover";
+import { useLanguage } from "@/hooks/useLanguage";
+
+const ADMIN_LABELS_ZH: Record<string, string> = {
+  "Existing Connectors": "已有连接器",
+  "Add Connector": "添加连接器",
+  "Document Sets": "文档集",
+  Explorer: "文档浏览器",
+  Feedback: "反馈",
+  Connectors: "连接器",
+  "Document Management": "文档管理",
+  "Custom Assistants": "自定义助手",
+  Assistants: "助手",
+  "Slack Bots": "Slack 机器人",
+  "Discord Bots": "Discord 机器人",
+  "MCP Actions": "MCP 操作",
+  "OpenAPI Actions": "OpenAPI 操作",
+  "Standard Answers": "标准答案",
+  "User Management": "用户管理",
+  Groups: "用户组",
+  Configuration: "配置",
+  "Default Assistant": "默认助手",
+  LLM: "大语言模型",
+  "Web Search": "网页搜索",
+  "Image Generation": "图像生成",
+  "Search Settings": "搜索设置",
+  "Document Processing": "文档处理",
+  "Knowledge Graph": "知识图谱",
+  Users: "用户",
+  "API Keys": "API 密钥",
+  "Token Rate Limits": "令牌速率限制",
+  Performance: "性能",
+  "Usage Statistics": "使用统计",
+  "Query History": "查询历史",
+  "Custom Analytics": "自定义分析",
+  Settings: "设置",
+  "Workspace Settings": "工作区设置",
+  "Appearance & Theming": "外观与主题",
+  Billing: "账单",
+};
+
+function adminLabel(label: string, isChinese: boolean) {
+  return isChinese ? ADMIN_LABELS_ZH[label] || label : label;
+}
 
 const connectors_items = () => [
   {
@@ -323,6 +366,7 @@ export default function AdminSidebar({
   enableCloudSS,
   enableEnterpriseSS,
 }: AdminSidebarProps) {
+  const isChinese = useLanguage().language === "zh";
   const { kgExposed } = useIsKGExposed();
   const pathname = usePathname();
   const { customAnalyticsEnabled } = useCustomAnalyticsEnabled();
@@ -352,14 +396,14 @@ export default function AdminSidebar({
             )}
             href="/chat"
           >
-            Exit Admin
+            {isChinese ? "退出管理后台" : "Exit Admin"}
           </SidebarTab>
         }
         footer={
           <div className="flex flex-col gap-2">
             {settings.webVersion && (
               <Text as="p" text02 secondaryBody className="px-2">
-                {`Onyx version: ${settings.webVersion}`}
+                {`Clover version: ${settings.webVersion}`}
               </Text>
             )}
             <UserAvatarPopover />
@@ -367,7 +411,7 @@ export default function AdminSidebar({
         }
       >
         {items.map((collection, index) => (
-          <SidebarSection key={index} title={collection.name}>
+          <SidebarSection key={index} title={adminLabel(collection.name, isChinese)}>
             <div className="flex flex-col w-full">
               {collection.items.map(({ link, icon: Icon, name }, index) => (
                 <SidebarTab
@@ -378,7 +422,7 @@ export default function AdminSidebar({
                     <Icon className={className} size={16} />
                   )}
                 >
-                  {name}
+                  {adminLabel(name, isChinese)}
                 </SidebarTab>
               ))}
             </div>

@@ -1,27 +1,45 @@
 // web/src/components/LanguageSwitcher.tsx
 'use client';
 
-import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export function LanguageSwitcher() {
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { language: currentLocale, setLanguage } = useLanguage();
 
-  const switchLang = (lang: string) => {
-    document.cookie = `NEXT_LOCALE=${lang};path=/;max-age=31536000`;
-    router.refresh();
+  const switchLang = (lang: 'en' | 'zh') => {
+    setLanguage(lang);
   };
 
   return (
-    <select 
-      value={locale} 
-      onChange={(e) => switchLang(e.target.value)}
-      className="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-800"
+    <div
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-1 rounded-lg border border-border bg-background/95 p-1 text-sm shadow-lg backdrop-blur"
+      role="group"
+      aria-label="Language"
     >
-      <option value="en">🇺 English</option>
-      <option value="zh">🇨 中文</option>
-    </select>
+      <button
+        type="button"
+        onClick={() => switchLang('zh')}
+        aria-pressed={currentLocale === 'zh'}
+        className={`rounded-md px-3 py-1.5 transition-colors ${
+          currentLocale === 'zh'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-text-secondary hover:bg-background-tint-01'
+        }`}
+      >
+        中文
+      </button>
+      <button
+        type="button"
+        onClick={() => switchLang('en')}
+        aria-pressed={currentLocale === 'en'}
+        className={`rounded-md px-3 py-1.5 transition-colors ${
+          currentLocale === 'en'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-text-secondary hover:bg-background-tint-01'
+        }`}
+      >
+        English
+      </button>
+    </div>
   );
 }

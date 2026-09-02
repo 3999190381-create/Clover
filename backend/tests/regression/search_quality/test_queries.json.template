@@ -7,6 +7,7 @@
                 "doc_link": "https://docs.onyx.app/welcome"
             }
         ],
+        "ground_truth_response": "Onyx is an AI platform for searching and chatting with organizational knowledge.",
         "categories": [
             "keyword",
             "broad",

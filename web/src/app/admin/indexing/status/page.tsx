@@ -16,8 +16,10 @@ import Cookies from "js-cookie";
 import { TOGGLED_CONNECTORS_COOKIE_NAME } from "@/lib/constants";
 import { ConnectorStaggeredSkeleton } from "./ConnectorRowSkeleton";
 import { IndexingStatusRequest } from "@/lib/types";
+import { useLanguage } from "@/hooks/useLanguage";
 
 function Main() {
+  const isChinese = useLanguage().language === "zh";
   // State for filter management
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     accessType: null,
@@ -150,7 +152,7 @@ function Main() {
     return (
       <div className="text-error">
         {ccPairsIndexingStatusesError?.info?.detail ||
-          "Error loading indexing status."}
+          (isChinese ? "加载索引状态时出错。" : "Error loading indexing status.")}
       </div>
     );
   }
@@ -181,11 +183,13 @@ function Main() {
         </div>
       ) : !ccPairsIndexingStatuses || ccPairsIndexingStatuses.length === 0 ? (
         <Text className="mt-12">
-          It looks like you don&apos;t have any connectors setup yet. Visit the{" "}
+          {isChinese
+            ? "你还没有配置任何连接器。请访问"
+            : "It looks like you don&apos;t have any connectors setup yet. Visit the "}{" "}
           <Link className="text-link" href="/admin/add-connector">
-            Add Connector
+            {isChinese ? "添加连接器" : "Add Connector"}
           </Link>{" "}
-          page to get started!
+          {isChinese ? "页面开始配置。" : "page to get started!"}
         </Text>
       ) : (
         <CCPairIndexingStatusTable
@@ -201,13 +205,14 @@ function Main() {
 }
 
 export default function Status() {
+  const isChinese = useLanguage().language === "zh";
   const { popup } = usePopupFromQuery({
     "connector-created": {
-      message: "Connector created successfully",
+        message: isChinese ? "连接器创建成功" : "Connector created successfully",
       type: "success",
     },
     "connector-deleted": {
-      message: "Connector deleted successfully",
+        message: isChinese ? "连接器删除成功" : "Connector deleted successfully",
       type: "success",
     },
   });
@@ -217,9 +222,11 @@ export default function Status() {
       {popup}
       <AdminPageTitle
         icon={<NotebookIcon size={32} />}
-        title="Existing Connectors"
+        title={isChinese ? "已有连接器" : "Existing Connectors"}
         farRightElement={
-          <Button href="/admin/add-connector">Add Connector</Button>
+          <Button href="/admin/add-connector">
+            {isChinese ? "添加连接器" : "Add Connector"}
+          </Button>
         }
       />
 

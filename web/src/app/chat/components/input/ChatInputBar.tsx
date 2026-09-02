@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import LineItem from "@/refresh-components/buttons/LineItem";
 import { MinimalPersonaSnapshot } from "@/app/admin/assistants/interfaces";
 import LLMPopover from "@/refresh-components/popovers/LLMPopover";
@@ -147,6 +148,7 @@ const ChatInputBar = React.memo(
     disabled,
     ref,
   }: ChatInputBarProps) => {
+    const isChinese = useLanguage().language === "zh";
     // Internal message state - kept local to avoid parent re-renders on every keystroke
     const [message, setMessage] = useState(initialMessage);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -474,7 +476,9 @@ const ChatInputBar = React.memo(
               style={{ scrollbarWidth: "thin" }}
               role="textarea"
               aria-multiline
-              placeholder="How can I help you today"
+              placeholder={
+                isChinese ? "今天我能为你做些什么？" : "How can I help you today"
+              }
               value={message}
               onKeyDown={(event) => {
                 if (

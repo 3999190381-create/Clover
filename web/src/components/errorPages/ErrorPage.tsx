@@ -1,7 +1,6 @@
 import ErrorPageLayout from "@/components/errorPages/ErrorPageLayout";
 import Text from "@/refresh-components/texts/Text";
 import { DOCS_BASE_URL } from "@/lib/constants";
-import { SvgAlertCircle } from "@opal/icons";
 
 export default function Error() {
   return (
@@ -10,7 +9,9 @@ export default function Error() {
         <Text as="p" headingH2>
           We encountered an issue
         </Text>
-        <SvgAlertCircle className="w-[1.5rem] h-[1.5rem] stroke-text-04" />
+        <span aria-hidden="true" className="text-xl leading-none">
+          ⚠
+        </span>
       </div>
 
       <Text as="p" text03>

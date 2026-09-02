@@ -1,17 +1,16 @@
 "use client";
 
-import { OnyxIcon, OnyxLogoTypeIcon } from "@/components/icons/icons";
 import { useSettingsContext } from "@/components/settings/SettingsProvider";
 import Image from "next/image";
 import {
   LOGO_FOLDED_SIZE_PX,
-  LOGO_UNFOLDED_SIZE_PX,
   NEXT_PUBLIC_DO_NOT_USE_TOGGLE_OFF_DANSWER_POWERED,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Text from "@/refresh-components/texts/Text";
 import Truncated from "@/refresh-components/texts/Truncated";
 import { useMemo } from "react";
+import cloverLogo from "@public/clover-logo.png";
 
 export interface LogoProps {
   folded?: boolean;
@@ -21,10 +20,9 @@ export interface LogoProps {
 
 export default function Logo({ folded, size, className }: LogoProps) {
   const foldedSize = size ?? LOGO_FOLDED_SIZE_PX;
-  const unfoldedSize = size ?? LOGO_UNFOLDED_SIZE_PX;
   const settings = useSettingsContext();
   const logoDisplayStyle = settings.enterpriseSettings?.logo_display_style;
-  const applicationName = settings.enterpriseSettings?.application_name;
+  const applicationName = "Clover";
 
   const logo = useMemo(
     () =>
@@ -45,9 +43,12 @@ export default function Logo({ folded, size, className }: LogoProps) {
           />
         </div>
       ) : (
-        <OnyxIcon
-          size={foldedSize}
-          className={cn("flex-shrink-0", className)}
+        <Image
+          src={cloverLogo}
+          alt="Clover"
+          width={foldedSize}
+          height={foldedSize}
+          className={cn("flex-shrink-0 object-contain", className)}
         />
       ),
     [className, foldedSize, settings.enterpriseSettings?.use_custom_logo]
@@ -77,7 +78,7 @@ export default function Logo({ folded, size, className }: LogoProps) {
             )}
             nowrap
           >
-            Powered by Onyx
+            Powered by Clover
           </Text>
         )}
       </div>
@@ -95,11 +96,5 @@ export default function Logo({ folded, size, className }: LogoProps) {
   }
 
   // Handle "logo_and_name" or default behavior
-  return applicationName ? (
-    renderNameAndPoweredBy({ includeLogo: true, includeName: true })
-  ) : folded ? (
-    <OnyxIcon size={foldedSize} className={cn("flex-shrink-0", className)} />
-  ) : (
-    <OnyxLogoTypeIcon size={unfoldedSize} className={className} />
-  );
+  return renderNameAndPoweredBy({ includeLogo: true, includeName: true });
 }

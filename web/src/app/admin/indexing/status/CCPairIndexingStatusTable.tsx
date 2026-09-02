@@ -35,6 +35,7 @@ import { PageSelector } from "@/components/PageSelector";
 import { ConnectorStaggeredSkeleton } from "./ConnectorRowSkeleton";
 import IconButton from "@/refresh-components/buttons/IconButton";
 import { SvgSettings } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 
 // Helper to handle navigation with cmd/ctrl+click support
 // NOTE: using this rather than Next/Link (or similar) since shadcn
@@ -74,6 +75,7 @@ function SummaryRow({
   onToggle: () => void;
 }) {
   const isPaidEnterpriseFeaturesEnabled = usePaidEnterpriseFeaturesEnabled();
+  const isChinese = useLanguage().language === "zh";
 
   return (
     <TableRow
@@ -96,14 +98,14 @@ function SummaryRow({
 
       <TableCell>
         <div className="text-sm text-neutral-500 dark:text-neutral-300">
-          Total Connectors
+          {isChinese ? "连接器总数" : "Total Connectors"}
         </div>
         <div className="text-xl font-semibold">{summary.total_connectors}</div>
       </TableCell>
 
       <TableCell>
         <div className="text-sm text-neutral-500 dark:text-neutral-300">
-          Active Connectors
+          {isChinese ? "活跃连接器" : "Active Connectors"}
         </div>
         <p className="flex text-xl mx-auto font-semibold items-center text-lg mt-1">
           {summary.active_connectors}/{summary.total_connectors}
@@ -113,7 +115,7 @@ function SummaryRow({
       {isPaidEnterpriseFeaturesEnabled && (
         <TableCell>
           <div className="text-sm text-neutral-500 dark:text-neutral-300">
-            Public Connectors
+            {isChinese ? "公开连接器" : "Public Connectors"}
           </div>
           <p className="flex text-xl mx-auto font-semibold items-center text-lg mt-1">
             {summary.public_connectors}/{summary.total_connectors}
@@ -123,7 +125,7 @@ function SummaryRow({
 
       <TableCell>
         <div className="text-sm text-neutral-500 dark:text-neutral-300">
-          Total Docs Indexed
+          {isChinese ? "已索引文档总数" : "Total Docs Indexed"}
         </div>
         <div className="text-xl font-semibold">
           {summary.total_docs_indexed.toLocaleString()}

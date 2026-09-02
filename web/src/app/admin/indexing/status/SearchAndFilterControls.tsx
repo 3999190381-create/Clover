@@ -5,6 +5,7 @@ import Button from "@/refresh-components/buttons/Button";
 import { Badge } from "@/components/ui/badge";
 import { FilterComponent, FilterOptions } from "./FilterComponent";
 import InputTypeIn from "@/refresh-components/inputs/InputTypeIn";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface SearchAndFilterControlsProps {
   searchQuery: string;
@@ -33,6 +34,7 @@ export function SearchAndFilterControls({
   filterComponentRef,
   resetPagination,
 }: SearchAndFilterControlsProps) {
+  const isChinese = useLanguage().language === "zh";
   const [localSearchValue, setLocalSearchValue] = useState(searchQuery);
 
   // Debounce the search query
@@ -53,7 +55,7 @@ export function SearchAndFilterControls({
   return (
     <div className="flex items-center gap-x-2">
       <InputTypeIn
-        placeholder="Search Connectors"
+        placeholder={isChinese ? "搜索连接器" : "Search Connectors"}
         type="text"
         value={localSearchValue}
         onChange={(event) => setLocalSearchValue(event.target.value)}
@@ -61,7 +63,13 @@ export function SearchAndFilterControls({
       />
 
       <Button onClick={hasExpandedSources ? onCollapseAll : onExpandAll}>
-        {hasExpandedSources ? "Collapse All" : "Expand All"}
+        {hasExpandedSources
+          ? isChinese
+            ? "全部收起"
+            : "Collapse All"
+          : isChinese
+            ? "全部展开"
+            : "Expand All"}
       </Button>
 
       <div className="flex items-center gap-2">

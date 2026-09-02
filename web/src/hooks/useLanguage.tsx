@@ -15,34 +15,27 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
-  const [translations, setTranslations] = useState<Record<string, any>>({});
+  const [translations] = useState<Record<string, any>>({});
 
   // ✅ 关键：从 localStorage 读取语言偏好
   useEffect(() => {
-    const savedLang = localStorage.getItem('language') as Language;
+    const savedLang =
+      (localStorage.getItem('language') as Language) ||
+      (document.cookie.match(/(?:^|; )NEXT_LOCALE=(en|zh)/)?.[1] as Language);
     if (savedLang && ['en', 'zh'].includes(savedLang)) {
       setLanguageState(savedLang);
     }
+    document.documentElement.lang = savedLang || 'en';
   }, []);
 
-  // ✅ 关键：加载翻译文件
   useEffect(() => {
-    console.log('Loading translations for:', language);  // ← 添加调试日志
-    fetch(`/messages/${language}.json`)
-      .then(res => {
-        console.log('Response status:', res.status);  // ← 添加调试日志
-        return res.json();
-      })
-      .then(data => {
-        console.log('Translations loaded:', data);  // ← 添加调试日志
-        setTranslations(data);
-      })
-      .catch(err => console.error('Failed to load translations:', err));
+    document.documentElement.lang = language;
   }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('language', lang);
+    document.cookie = `NEXT_LOCALE=${lang};path=/;max-age=31536000`;
   };
 
   // ✅ 关键：翻译函数

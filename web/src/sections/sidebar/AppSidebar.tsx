@@ -3,6 +3,7 @@
 import { useCallback, memo, useMemo, useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useSettingsContext } from "@/components/settings/SettingsProvider";
 import { MinimalPersonaSnapshot } from "@/app/admin/assistants/interfaces";
 import Text from "@/refresh-components/texts/Text";
@@ -100,6 +101,7 @@ interface RecentsSectionProps {
 }
 
 function RecentsSection({ chatSessions }: RecentsSectionProps) {
+  const isChinese = useLanguage().language === "zh";
   const { setNodeRef, isOver } = useDroppable({
     id: DRAG_TYPES.RECENTS,
     data: {
@@ -115,10 +117,12 @@ function RecentsSection({ chatSessions }: RecentsSectionProps) {
         isOver && "bg-background-tint-03"
       )}
     >
-      <SidebarSection title="Recents">
+      <SidebarSection title={isChinese ? "最近会话" : "Recents"}>
         {chatSessions.length === 0 ? (
           <Text as="p" text01 className="px-3">
-            Try sending a message! Your chat history will appear here.
+            {isChinese
+              ? "发送一条消息吧！你的聊天记录会显示在这里。"
+              : "Try sending a message! Your chat history will appear here."}
           </Text>
         ) : (
           chatSessions.map((chatSession) => (
@@ -141,6 +145,7 @@ interface AppSidebarInnerProps {
 
 const MemoizedAppSidebarInner = memo(
   ({ folded, onFoldClick }: AppSidebarInnerProps) => {
+    const isChinese = useLanguage().language === "zh";
     const searchParams = useSearchParams();
     const router = useRouter();
     const combinedSettings = useSettingsContext();
@@ -429,21 +434,21 @@ const MemoizedAppSidebarInner = memo(
             href={href}
             transient={activeSidebarTab.isNewSession()}
           >
-            New Session
+            {isChinese ? "新会话" : "New Session"}
           </SidebarTab>
         </div>
       );
-    }, [folded, activeSidebarTab, combinedSettings, currentAgent]);
+    }, [folded, activeSidebarTab, combinedSettings, currentAgent, isChinese]);
 
     const buildButton = useMemo(
       () => (
         <div data-testid="AppSidebar/build">
           <SidebarTab leftIcon={SvgDevKit} folded={folded} href="/build/v1">
-            Craft
+            {isChinese ? "创作" : "Craft"}
           </SidebarTab>
         </div>
       ),
-      [folded]
+      [folded, isChinese]
     );
 
     const moreAgentsButton = useMemo(
@@ -460,11 +465,17 @@ const MemoizedAppSidebarInner = memo(
             transient={activeSidebarTab.isMoreAgents()}
             lowlight={!folded}
           >
-            {visibleAgents.length === 0 ? "Explore Agents" : "More Agents"}
+            {visibleAgents.length === 0
+              ? isChinese
+                ? "探索助手"
+                : "Explore Agents"
+              : isChinese
+                ? "更多助手"
+                : "More Agents"}
           </SidebarTab>
         </div>
       ),
-      [folded, activeSidebarTab, visibleAgents]
+      [folded, activeSidebarTab, visibleAgents, isChinese]
     );
     const newProjectButton = useMemo(
       () => (
@@ -475,10 +486,10 @@ const MemoizedAppSidebarInner = memo(
           folded={folded}
           lowlight={!folded}
         >
-          New Project
+          {isChinese ? "新建项目" : "New Project"}
         </SidebarTab>
       ),
-      [folded, createProjectModal.toggle, createProjectModal.isOpen]
+      [folded, createProjectModal.toggle, createProjectModal.isOpen, isChinese]
     );
     const handleShowBuildIntro = useCallback(() => {
       setShowIntroAnimation(true);
@@ -493,7 +504,13 @@ const MemoizedAppSidebarInner = memo(
               leftIcon={SvgSettings}
               folded={folded}
             >
-              {isAdmin ? "Admin Panel" : "Curator Panel"}
+              {isAdmin
+                ? isChinese
+                  ? "管理面板"
+                  : "Admin Panel"
+                : isChinese
+                  ? "策展面板"
+                  : "Curator Panel"}
             </SidebarTab>
           )}
           <UserAvatarPopover
@@ -504,7 +521,14 @@ const MemoizedAppSidebarInner = memo(
           />
         </div>
       ),
-      [folded, isAdmin, isCurator, handleShowBuildIntro, isOnyxCraftEnabled]
+      [
+        folded,
+        isAdmin,
+        isCurator,
+        handleShowBuildIntro,
+        isOnyxCraftEnabled,
+        isChinese,
+      ]
     );
 
     return (

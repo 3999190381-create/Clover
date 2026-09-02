@@ -48,11 +48,17 @@ class AnalysisSummary(BaseModel):
     rank: int | None
     total_results: int
     ground_truth_count: int
-    response_relevancy: float | None = None
+    # Retrieval quality at document level. A retrieved document is relevant
+    # when its document_id appears in ground_truth_docids.
+    context_precision: float = 0.0
+    context_recall: float = 0.0
+    context_f1: float = 0.0
+    answer_relevancy: float | None = None
     faithfulness: float | None = None
-    factual_correctness: float | None = None
+    answer_correctness: float | None = None
     answer: str | None = None
     retrieved: list[RetrievedDocument] = []
+    answer_contexts: list[RetrievedDocument] = []
     time_taken: float
 
 
@@ -68,15 +74,24 @@ class SearchMetrics(BaseModel):
 
 
 class AnswerMetrics(BaseModel):
-    response_relevancy: float
+    answer_relevancy: float
     faithfulness: float
-    factual_correctness: float
+    answer_correctness: float
 
     # only for metric computation
-    n_response_relevancy: int
+    n_answer_relevancy: int
     n_faithfulness: int
-    n_factual_correctness: int
+    n_answer_correctness: int
 
 
-class CombinedMetrics(SearchMetrics, AnswerMetrics):
+class ContextMetrics(BaseModel):
+    """Aggregate context precision/recall/F1 over evaluated queries."""
+
+    context_precision: float
+    context_recall: float
+    context_f1: float
+    n_context: int
+
+
+class CombinedMetrics(SearchMetrics, AnswerMetrics, ContextMetrics):
     average_time_taken: float

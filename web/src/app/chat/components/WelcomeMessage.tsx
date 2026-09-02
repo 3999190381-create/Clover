@@ -9,6 +9,7 @@ import AgentAvatar from "@/refresh-components/avatars/AgentAvatar";
 import Text from "@/refresh-components/texts/Text";
 import { MinimalPersonaSnapshot } from "@/app/admin/assistants/interfaces";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useSettingsContext } from "@/components/settings/SettingsProvider";
 
 export interface WelcomeMessageProps {
@@ -22,17 +23,20 @@ export default function WelcomeMessage({
 }: WelcomeMessageProps) {
   const settings = useSettingsContext();
   const enterpriseSettings = settings?.enterpriseSettings;
+  const locale = useLanguage().language;
 
   // Use a stable default for SSR, then randomize on client after hydration
-  const [greeting, setGreeting] = useState(GREETING_MESSAGES[0]);
+  const [greeting, setGreeting] = useState(
+    locale === "zh" ? "我能为你做些什么？" : GREETING_MESSAGES[0]
+  );
 
   useEffect(() => {
     if (enterpriseSettings?.custom_greeting_message) {
       setGreeting(enterpriseSettings.custom_greeting_message);
     } else {
-      setGreeting(getRandomGreeting());
+      setGreeting(locale === "zh" ? "我能为你做些什么？" : getRandomGreeting());
     }
-  }, [enterpriseSettings?.custom_greeting_message]);
+  }, [enterpriseSettings?.custom_greeting_message, locale]);
 
   let content: React.ReactNode = null;
 

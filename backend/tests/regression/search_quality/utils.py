@@ -10,7 +10,7 @@ from ragas import evaluate  # type: ignore[import-not-found,unused-ignore]
 from ragas import EvaluationDataset  # type: ignore[import-not-found,unused-ignore]
 from ragas import SingleTurnSample  # type: ignore[import-not-found,unused-ignore]
 from ragas.dataset_schema import EvaluationResult  # type: ignore[import-not-found,unused-ignore]
-from ragas.metrics import FactualCorrectness  # type: ignore[import-not-found,unused-ignore]
+from ragas.metrics import AnswerCorrectness  # type: ignore[import-not-found,unused-ignore]
 from ragas.metrics import Faithfulness  # type: ignore[import-not-found,unused-ignore]
 from ragas.metrics import ResponseRelevancy  # type: ignore[import-not-found,unused-ignore]
 from sqlalchemy.orm import Session
@@ -151,7 +151,7 @@ def ragas_evaluate(
                 ResponseRelevancy(),
                 Faithfulness(),
                 *(
-                    [FactualCorrectness(mode="recall")]
+                    [AnswerCorrectness()]
                     if reference_answer is not None
                     else []
                 ),
@@ -179,9 +179,9 @@ def compute_overall_scores(metrics: CombinedMetrics) -> tuple[float, float]:
 
     # answer score
     mets = [
-        *([metrics.response_relevancy] if metrics.n_response_relevancy > 0 else []),
+        *([metrics.answer_relevancy] if metrics.n_answer_relevancy > 0 else []),
         *([metrics.faithfulness] if metrics.n_faithfulness > 0 else []),
-        *([metrics.factual_correctness] if metrics.n_factual_correctness > 0 else []),
+        *([metrics.answer_correctness] if metrics.n_answer_correctness > 0 else []),
     ]
     answer_score = 100 * sum(mets) / len(mets) if mets else 0.0
 
