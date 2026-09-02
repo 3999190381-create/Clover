@@ -11,8 +11,10 @@ import { AdminPageTitle } from "@/components/admin/Title";
 import Text from "@/refresh-components/texts/Text";
 import { cn } from "@/lib/utils";
 import { SvgLock } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 
 function Main() {
+  const isChinese = useLanguage().language === "zh";
   const {
     data: isApiKeySet,
     error,
@@ -65,29 +67,28 @@ function Main() {
             text05
             className="border-b border-border-01 pb-2"
           >
-            Process with Unstructured API
+            {isChinese ? "使用 Unstructured API 处理" : "Process with Unstructured API"}
           </Text>
 
           <div className="flex flex-col gap-2">
             <Text as="p" mainContentBody text04 className="leading-relaxed">
-              Unstructured extracts and transforms complex data from formats
-              like .pdf, .docx, .png, .pptx, etc. into clean text for Onyx to
-              ingest. Provide an API key to enable Unstructured document
-              processing.
+              {isChinese
+                ? "Unstructured 可从 .pdf、.docx、.png、.pptx 等格式中提取并转换复杂数据，生成供 Clover 导入的纯文本。提供 API 密钥以启用 Unstructured 文档处理。"
+                : "Unstructured extracts and transforms complex data from formats like .pdf, .docx, .png, .pptx, etc. into clean text for Onyx to ingest. Provide an API key to enable Unstructured document processing."}
             </Text>
             <Text as="p" mainContentMuted text03>
-              <span className="font-main-ui-action text-text-03">Note:</span>{" "}
-              this will send documents to Unstructured servers for processing.
+              <span className="font-main-ui-action text-text-03">{isChinese ? "注意：" : "Note:"}</span>{" "}
+              {isChinese ? "文档将发送到 Unstructured 服务器进行处理。" : "this will send documents to Unstructured servers for processing."}
             </Text>
             <Text as="p" mainContentBody text04 className="leading-relaxed">
-              Learn more about Unstructured{" "}
+              {isChinese ? "了解更多 Unstructured 信息：" : "Learn more about Unstructured "}
               <a
                 href="https://docs.unstructured.io/welcome"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-action-link-05 underline-offset-4 hover:underline"
               >
-                here
+                {isChinese ? "此处" : "here"}
               </a>
               .
             </Text>
@@ -128,15 +129,15 @@ function Main() {
               {isApiKeySet ? (
                 <>
                   <Button onClick={handleDelete} danger>
-                    Delete API Key
+                    {isChinese ? "删除 API 密钥" : "Delete API Key"}
                   </Button>
                   <Text as="p" mainContentBody text04 className="desktop:mt-0">
-                    Delete the current API key before updating.
+                    {isChinese ? "更新前请先删除当前 API 密钥。" : "Delete the current API key before updating."}
                   </Text>
                 </>
               ) : (
                 <Button onClick={handleSave} action>
-                  Save API Key
+                  {isChinese ? "保存 API 密钥" : "Save API Key"}
                 </Button>
               )}
             </div>

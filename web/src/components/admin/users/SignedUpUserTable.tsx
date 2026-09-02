@@ -40,6 +40,7 @@ import { LogOut, UserMinus } from "lucide-react";
 import Popover from "@/refresh-components/Popover";
 import IconButton from "@/refresh-components/buttons/IconButton";
 import { SvgKey, SvgMoreHorizontal } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 const ITEMS_PER_PAGE = 10;
 const PAGES_PER_BATCH = 2;
 
@@ -71,6 +72,7 @@ export default function SignedUpUserTable({
   onTotalItemsChange,
   onLoadingChange,
 }: SignedUpUserTableProps) {
+  const isChinese = useLanguage().language === "zh";
   const [filters, setFilters] = useState<{
     is_active?: boolean;
     roles?: UserRole[];
@@ -178,9 +180,9 @@ export default function SignedUpUserTable({
             <InputSelect.Trigger />
 
             <InputSelect.Content>
-              <InputSelect.Item value="all">All Status</InputSelect.Item>
-              <InputSelect.Item value="true">Active</InputSelect.Item>
-              <InputSelect.Item value="false">Inactive</InputSelect.Item>
+              <InputSelect.Item value="all">{isChinese ? "全部状态" : "All Status"}</InputSelect.Item>
+              <InputSelect.Item value="true">{isChinese ? "活跃" : "Active"}</InputSelect.Item>
+              <InputSelect.Item value="false">{isChinese ? "未激活" : "Inactive"}</InputSelect.Item>
             </InputSelect.Content>
           </InputSelect>
 
@@ -189,7 +191,7 @@ export default function SignedUpUserTable({
               <SelectValue>
                 {filters.roles?.length
                   ? `${filters.roles.length} role(s) selected`
-                  : "All Roles"}
+                  : isChinese ? "全部角色" : "All Roles"}
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-background-tint-00">
@@ -341,12 +343,12 @@ export default function SignedUpUserTable({
       <Table className="overflow-visible">
         <TableHeader>
           <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead className="text-center">Role</TableHead>
-            <TableHead className="text-center">Status</TableHead>
+            <TableHead>{isChinese ? "邮箱" : "Email"}</TableHead>
+            <TableHead className="text-center">{isChinese ? "角色" : "Role"}</TableHead>
+            <TableHead className="text-center">{isChinese ? "状态" : "Status"}</TableHead>
             <TableHead>
               <div className="flex">
-                <div className="ml-auto">Actions</div>
+                <div className="ml-auto">{isChinese ? "操作" : "Actions"}</div>
               </div>
             </TableHead>
           </TableRow>
@@ -366,8 +368,8 @@ export default function SignedUpUserTable({
                 <TableCell colSpan={4} className="text-center">
                   <p className="pt-4 pb-4">
                     {filters.roles?.length || filters.is_active !== undefined
-                      ? "No users found matching your filters"
-                      : `No users found matching "${q}"`}
+                      ? isChinese ? "没有符合筛选条件的用户" : "No users found matching your filters"
+                      : isChinese ? `没有找到与“${q}”匹配的用户` : `No users found matching "${q}"`}
                   </p>
                 </TableCell>
               </TableRow>
@@ -379,7 +381,7 @@ export default function SignedUpUserTable({
                     {renderUserRoleDropdown(user)}
                   </TableCell>
                   <TableCell className="text-center w-[140px]">
-                    <i>{user.is_active ? "Active" : "Inactive"}</i>
+                    <i>{user.is_active ? (isChinese ? "活跃" : "Active") : (isChinese ? "未激活" : "Inactive")}</i>
                   </TableCell>
                   <TableCell className="text-right  w-[300px] ">
                     {renderActionButtons(user)}

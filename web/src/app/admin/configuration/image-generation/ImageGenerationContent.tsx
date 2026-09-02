@@ -13,6 +13,7 @@ import {
   ImageProvider,
 } from "@/app/admin/configuration/image-generation/constants";
 import ImageGenerationConnectionModal from "@/app/admin/configuration/image-generation/ImageGenerationConnectionModal";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   ImageGenerationConfigView,
   setDefaultImageGenerationConfig,
@@ -22,6 +23,7 @@ import { ProviderIcon } from "@/app/admin/configuration/llm/ProviderIcon";
 import Message from "@/refresh-components/messages/Message";
 
 export default function ImageGenerationContent() {
+  const isChinese = useLanguage().language === "zh";
   const { popup, setPopup } = usePopup();
 
   const {
@@ -136,7 +138,7 @@ export default function ImageGenerationContent() {
   if (llmError || configError) {
     return (
       <div className="text-error">
-        Failed to load configuration. Please refresh the page.
+        {isChinese ? "加载配置失败，请刷新页面。" : "Failed to load configuration. Please refresh the page."}
       </div>
     );
   }
@@ -148,10 +150,10 @@ export default function ImageGenerationContent() {
         {/* Section Header */}
         <div className="flex flex-col gap-0.5">
           <Text mainContentEmphasis text05>
-            Image Generation Model
+            {isChinese ? "图像生成模型" : "Image Generation Model"}
           </Text>
           <Text secondaryBody text03>
-            Select a model to generate images in chat.
+            {isChinese ? "选择用于在聊天中生成图像的模型。" : "Select a model to generate images in chat."}
           </Text>
         </div>
 
@@ -160,7 +162,7 @@ export default function ImageGenerationContent() {
             info
             static
             large
-            text="Connect an image generation model to use in chat."
+            text={isChinese ? "连接图像生成模型以在聊天中使用。" : "Connect an image generation model to use in chat."}
             className="w-full"
           />
         )}

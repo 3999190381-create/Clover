@@ -11,8 +11,10 @@ import { SvgFolderPlus } from "@opal/icons";
 import Modal from "@/refresh-components/Modal";
 import InputTypeIn from "@/refresh-components/inputs/InputTypeIn";
 import { usePopup } from "@/components/admin/connectors/Popup";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function CreateProjectModal() {
+  const isChinese = useLanguage().language === "zh";
   const { createProject } = useProjectsContext();
   const modal = useModal();
   const route = useAppRouter();
@@ -30,7 +32,7 @@ export default function CreateProjectModal() {
     } catch (e) {
       setPopup({
         type: "error",
-        message: `Failed to create the project ${name}`,
+        message: `${isChinese ? "创建项目失败" : "Failed to create the project"} ${name}`,
       });
     }
   }
@@ -45,25 +47,25 @@ export default function CreateProjectModal() {
         <Modal.Content width="sm">
           <Modal.Header
             icon={SvgFolderPlus}
-            title="Create New Project"
-            description="Use projects to organize your files and chats in one place, and add custom instructions for ongoing work."
+            title={isChinese ? "新建项目" : "Create New Project"}
+            description={isChinese ? "使用项目将文件和聊天集中整理，并为持续工作添加自定义说明。" : "Use projects to organize your files and chats in one place, and add custom instructions for ongoing work."}
             onClose={() => modal.toggle(false)}
           />
           <Modal.Body>
-            <InputLayouts.Vertical title="Project Name">
+            <InputLayouts.Vertical title={isChinese ? "项目名称" : "Project Name"}>
               <InputTypeIn
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                placeholder="What are you working on?"
+                placeholder={isChinese ? "你正在做什么？" : "What are you working on?"}
                 showClearButton
               />
             </InputLayouts.Vertical>
           </Modal.Body>
           <Modal.Footer>
             <Button secondary onClick={() => modal.toggle(false)}>
-              Cancel
+              {isChinese ? "取消" : "Cancel"}
             </Button>
-            <Button onClick={handleSubmit}>Create Project</Button>
+            <Button onClick={handleSubmit}>{isChinese ? "创建项目" : "Create Project"}</Button>
           </Modal.Footer>
         </Modal.Content>
       </Modal>

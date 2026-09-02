@@ -17,8 +17,10 @@ import { VertexAIForm } from "./forms/VertexAIForm";
 import { OpenRouterForm } from "./forms/OpenRouterForm";
 import { getFormForExistingProvider } from "./forms/getForm";
 import { CustomForm } from "./forms/CustomForm";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function LLMConfiguration() {
+  const isChinese = useLanguage().language === "zh";
   const { data: existingLlmProviders } = useSWR<LLMProviderView[]>(
     LLM_PROVIDERS_ADMIN_URL,
     errorHandlingFetcher
@@ -32,15 +34,14 @@ export function LLMConfiguration() {
 
   return (
     <>
-      <Title className="mb-2">Enabled LLM Providers</Title>
+      <Title className="mb-2">{isChinese ? "已启用的大语言模型提供商" : "Enabled LLM Providers"}</Title>
 
       {existingLlmProviders.length > 0 ? (
         <>
           <Text as="p" className="mb-4">
-            If multiple LLM providers are enabled, the default provider will be
-            used for all &quot;Default&quot; Assistants. For user-created
-            Assistants, you can select the LLM provider/model that best fits the
-            use case!
+            {isChinese
+              ? "如果启用了多个大语言模型提供商，默认提供商将用于所有“默认”助手。对于用户创建的助手，可以选择最适合使用场景的提供商或模型。"
+              : 'If multiple LLM providers are enabled, the default provider will be used for all "Default" Assistants. For user-created Assistants, you can select the LLM provider/model that best fits the use case!'}
           </Text>
           <div className="flex flex-col gap-y-4">
             {[...existingLlmProviders]
@@ -57,15 +58,16 @@ export function LLMConfiguration() {
           </div>
         </>
       ) : (
-        <Callout type="warning" title="No LLM providers configured yet">
-          Please set one up below in order to start using Onyx!
+        <Callout type="warning" title={isChinese ? "尚未配置大语言模型提供商" : "No LLM providers configured yet"}>
+          {isChinese ? "请在下方配置一个提供商后开始使用 Clover。" : "Please set one up below in order to start using Clover!"}
         </Callout>
       )}
 
-      <Title className="mb-2 mt-6">Add LLM Provider</Title>
+      <Title className="mb-2 mt-6">{isChinese ? "添加大语言模型提供商" : "Add LLM Provider"}</Title>
       <Text as="p" className="mb-4">
-        Add a new LLM provider by either selecting from one of the default
-        providers or by specifying your own custom LLM provider.
+        {isChinese
+          ? "可从默认提供商中选择，或指定自定义的大语言模型提供商。"
+          : "Add a new LLM provider by either selecting from one of the default providers or by specifying your own custom LLM provider."}
       </Text>
 
       <div className="flex flex-col gap-y-4">

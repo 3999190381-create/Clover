@@ -41,6 +41,21 @@ import Text from "@/refresh-components/texts/Text";
 import { WithoutStyles } from "@/types";
 import { IconProps } from "@opal/types";
 import { HtmlHTMLAttributes, useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
+
+const SETTINGS_TEXT_ZH: Record<string, string> = {
+  "MCP Actions": "MCP 操作",
+  "OpenAPI Actions": "OpenAPI 操作",
+  "LLM Setup": "大语言模型设置",
+  "Web Search": "网页搜索",
+  "Image Generation": "图像生成",
+  "Discord Bots": "Discord 机器人",
+  "Connect MCP (Model Context Protocol) servers to add custom actions and tools for your assistants.": "连接 MCP（模型上下文协议）服务器，为助手添加自定义操作和工具。",
+  "Connect OpenAPI servers to add custom actions and tools for your assistants.": "连接 OpenAPI 服务器，为助手添加自定义操作和工具。",
+  "Search settings for external search across the internet.": "配置互联网外部搜索。",
+  "Settings for in-chat image generation.": "配置聊天中的图像生成。",
+  "Connect Onyx to your Discord servers. Users can ask questions directly in Discord channels.": "将 Clover 连接到 Discord 服务器，用户可以直接在 Discord 频道中提问。",
+};
 
 const widthClasses = {
   md: "w-[min(50rem,100%)]",
@@ -187,6 +202,12 @@ function SettingsHeader({
   backButton,
   separator,
 }: SettingsHeaderProps) {
+  const isChinese = useLanguage().language === "zh";
+  const displayTitle = isChinese ? SETTINGS_TEXT_ZH[title] || title : title;
+  const displayDescription =
+    isChinese && typeof description === "string"
+      ? SETTINGS_TEXT_ZH[description] || description
+      : description;
   const [showShadow, setShowShadow] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -233,16 +254,16 @@ function SettingsHeader({
           <div className="flex flex-col">
             <div aria-label="admin-page-title">
               <Text as="p" headingH2>
-                {title}
+                {displayTitle}
               </Text>
             </div>
-            {description &&
-              (typeof description === "string" ? (
+            {displayDescription &&
+              (typeof displayDescription === "string" ? (
                 <Text as="p" secondaryBody text03>
-                  {description}
+                  {displayDescription}
                 </Text>
               ) : (
-                description
+                displayDescription
               ))}
           </div>
         </div>

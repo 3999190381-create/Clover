@@ -17,6 +17,7 @@ import useSWR, { mutate } from "swr";
 import Checkbox from "@/refresh-components/inputs/Checkbox";
 import { TableHeader } from "@/components/ui/table";
 import Text from "@/components/ui/text";
+import { useLanguage } from "@/hooks/useLanguage";
 
 type TokenRateLimitTableArgs = {
   tokenRateLimits: TokenRateLimitDisplay[];
@@ -35,6 +36,7 @@ export const TokenRateLimitTable = ({
   hideHeading,
   isAdmin,
 }: TokenRateLimitTableArgs) => {
+  const isChinese = useLanguage().language === "zh";
   const shouldRenderGroupName = () =>
     tokenRateLimits.length > 0 &&
     tokenRateLimits[0] !== undefined &&
@@ -71,7 +73,7 @@ export const TokenRateLimitTable = ({
           <Text className="my-2">{description}</Text>
         )}
         <Text className={`${!hideHeading && "my-8"}`}>
-          No token rate limits set!
+          {isChinese ? "尚未设置令牌速率限制！" : "No token rate limits set!"}
         </Text>
       </div>
     );
@@ -90,11 +92,11 @@ export const TokenRateLimitTable = ({
       >
         <TableHeader>
           <TableRow>
-            <TableHead>Enabled</TableHead>
-            {shouldRenderGroupName() && <TableHead>Group Name</TableHead>}
-            <TableHead>Time Window (Hours)</TableHead>
-            <TableHead>Token Budget (Thousands)</TableHead>
-            {isAdmin && <TableHead>Delete</TableHead>}
+            <TableHead>{isChinese ? "启用" : "Enabled"}</TableHead>
+            {shouldRenderGroupName() && <TableHead>{isChinese ? "用户组名称" : "Group Name"}</TableHead>}
+            <TableHead>{isChinese ? "时间窗口（小时）" : "Time Window (Hours)"}</TableHead>
+            <TableHead>{isChinese ? "令牌预算（千）" : "Token Budget (Thousands)"}</TableHead>
+            {isAdmin && <TableHead>{isChinese ? "删除" : "Delete"}</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -126,7 +128,9 @@ export const TokenRateLimitTable = ({
                           }
                         />
                         <p className="ml-2">
-                          {tokenRateLimit.enabled ? "Enabled" : "Disabled"}
+                          {tokenRateLimit.enabled
+                            ? isChinese ? "已启用" : "Enabled"
+                            : isChinese ? "已停用" : "Disabled"}
                         </p>
                       </div>
                     </div>
@@ -138,12 +142,16 @@ export const TokenRateLimitTable = ({
                   </TableCell>
                 )}
                 <TableCell>
-                  {tokenRateLimit.period_hours +
-                    " hour" +
-                    (tokenRateLimit.period_hours > 1 ? "s" : "")}
+                  {isChinese
+                    ? `${tokenRateLimit.period_hours} 小时`
+                    : tokenRateLimit.period_hours +
+                      " hour" +
+                      (tokenRateLimit.period_hours > 1 ? "s" : "")}
                 </TableCell>
                 <TableCell>
-                  {tokenRateLimit.token_budget + " thousand tokens"}
+                  {isChinese
+                    ? `${tokenRateLimit.token_budget} 千令牌`
+                    : tokenRateLimit.token_budget + " thousand tokens"}
                 </TableCell>
                 {isAdmin && (
                   <TableCell>
@@ -178,6 +186,7 @@ export const GenericTokenRateLimitTable = ({
   responseMapper?: (data: any) => TokenRateLimitDisplay[];
   isAdmin?: boolean;
 }) => {
+  const isChinese = useLanguage().language === "zh";
   const { data, isLoading, error } = useSWR<TokenRateLimitDisplay[]>(
     fetchUrl,
     errorHandlingFetcher
@@ -188,7 +197,7 @@ export const GenericTokenRateLimitTable = ({
   }
 
   if (!isLoading && error) {
-    return <Text>Failed to load token rate limits</Text>;
+    return <Text>{isChinese ? "加载令牌速率限制失败" : "Failed to load token rate limits"}</Text>;
   }
 
   let processedData = data;

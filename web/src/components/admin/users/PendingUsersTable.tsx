@@ -17,6 +17,7 @@ import { FetchError } from "@/lib/fetcher";
 import { CheckIcon } from "lucide-react";
 import { ConfirmEntityModal } from "@/components/modals/ConfirmEntityModal";
 import { SvgCheck } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 const USERS_PER_PAGE = 10;
 
 interface Props {
@@ -36,11 +37,12 @@ const PendingUsersTable = ({
   isLoading,
   q,
 }: Props) => {
+  const isChinese = useLanguage().language === "zh";
   const [currentPageNum, setCurrentPageNum] = useState<number>(1);
   const [userToApprove, setUserToApprove] = useState<string | null>(null);
 
   if (!users.length)
-    return <p>Users that have requested to join will show up here</p>;
+    return <p>{isChinese ? "申请加入的用户会显示在这里" : "Users that have requested to join will show up here"}</p>;
 
   const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
 
@@ -62,7 +64,7 @@ const PendingUsersTable = ({
   if (error) {
     return (
       <ErrorCallout
-        errorTitle="Error loading pending users"
+        errorTitle={isChinese ? "加载待处理用户失败" : "Error loading pending users"}
         errorMsg={error?.info?.detail}
       />
     );
@@ -105,9 +107,9 @@ const PendingUsersTable = ({
       <Table className="overflow-visible">
         <TableHeader>
           <TableRow>
-            <TableHead>Email</TableHead>
+            <TableHead>{isChinese ? "邮箱" : "Email"}</TableHead>
             <TableHead>
-              <div className="flex justify-end">Actions</div>
+              <div className="flex justify-end">{isChinese ? "操作" : "Actions"}</div>
             </TableHead>
           </TableRow>
         </TableHeader>

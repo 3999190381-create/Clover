@@ -18,6 +18,7 @@ import { usePaidEnterpriseFeaturesEnabled } from "@/components/settings/usePaidE
 import CreateButton from "@/refresh-components/buttons/CreateButton";
 import { SvgGlobe, SvgShield, SvgUser, SvgUsers } from "@opal/icons";
 import { Section } from "@/layouts/general-layouts";
+import { useLanguage } from "@/hooks/useLanguage";
 const BASE_URL = "/api/admin/token-rate-limits";
 const GLOBAL_TOKEN_FETCH_URL = `${BASE_URL}/global`;
 const USER_TOKEN_FETCH_URL = `${BASE_URL}/users`;
@@ -59,6 +60,7 @@ const handleCreateTokenRateLimit = async (
 };
 
 function Main() {
+  const isChinese = useLanguage().language === "zh";
   const [tabIndex, setTabIndex] = useState(0);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const { popup, setPopup } = usePopup();
@@ -92,7 +94,7 @@ function Main() {
     )
       .then(() => {
         setModalIsOpen(false);
-        setPopup({ type: "success", message: "Token rate limit created!" });
+        setPopup({ type: "success", message: isChinese ? "令牌速率限制已创建！" : "Token rate limit created!" });
         updateTable(target_scope);
       })
       .catch((error) => {
@@ -105,47 +107,43 @@ function Main() {
       {popup}
 
       <Text>
-        Token rate limits enable you control how many tokens can be spent in a
-        given time period. With token rate limits, you can:
+        {isChinese ? "令牌速率限制可以控制指定时间段内的令牌消耗量。你可以：" : "Token rate limits enable you control how many tokens can be spent in a given time period. With token rate limits, you can:"}
       </Text>
 
       <ul className="list-disc ml-4">
         <li>
           <Text>
-            Set a global rate limit to control your team&apos;s overall token
-            spend.
+            {isChinese ? "设置全局速率限制，控制团队整体令牌消耗。" : "Set a global rate limit to control your team's overall token spend."}
           </Text>
         </li>
         {isPaidEnterpriseFeaturesEnabled && (
           <>
             <li>
               <Text>
-                Set rate limits for users to ensure that no single user can
-                spend too many tokens.
+                {isChinese ? "为用户设置速率限制，避免单个用户消耗过多令牌。" : "Set rate limits for users to ensure that no single user can spend too many tokens."}
               </Text>
             </li>
             <li>
               <Text>
-                Set rate limits for user groups to control token spend for your
-                teams.
+                {isChinese ? "为用户组设置速率限制，控制团队令牌消耗。" : "Set rate limits for user groups to control token spend for your teams."}
               </Text>
             </li>
           </>
         )}
         <li>
-          <Text>Enable and disable rate limits on the fly.</Text>
+          <Text>{isChinese ? "随时启用或停用速率限制。" : "Enable and disable rate limits on the fly."}</Text>
         </li>
       </ul>
 
       <CreateButton onClick={() => setModalIsOpen(true)}>
-        Create a Token Rate Limit
+        {isChinese ? "创建令牌速率限制" : "Create a Token Rate Limit"}
       </CreateButton>
 
       {isPaidEnterpriseFeaturesEnabled ? (
         <SimpleTabs
           tabs={{
             "0": {
-              name: "Global",
+              name: isChinese ? "全局" : "Global",
               icon: SvgGlobe,
               content: (
                 <GenericTokenRateLimitTable
@@ -156,7 +154,7 @@ function Main() {
               ),
             },
             "1": {
-              name: "User",
+              name: isChinese ? "用户" : "User",
               icon: SvgUser,
               content: (
                 <GenericTokenRateLimitTable
@@ -167,7 +165,7 @@ function Main() {
               ),
             },
             "2": {
-              name: "User Groups",
+              name: isChinese ? "用户组" : "User Groups",
               icon: SvgUsers,
               content: (
                 <GenericTokenRateLimitTable

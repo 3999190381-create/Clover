@@ -31,8 +31,10 @@ import Button from "@/refresh-components/buttons/Button";
 import CopyIconButton from "@/refresh-components/buttons/CopyIconButton";
 import Text from "@/refresh-components/texts/Text";
 import { SvgEdit, SvgKey, SvgRefreshCw } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 
 function Main() {
+  const isChinese = useLanguage().language === "zh";
   const { popup, setPopup } = usePopup();
 
   const {
@@ -58,7 +60,7 @@ function Main() {
   if (!apiKeys || error) {
     return (
       <ErrorCallout
-        errorTitle="Failed to fetch API Keys"
+        errorTitle={isChinese ? "获取 API 密钥失败" : "Failed to fetch API Keys"}
         errorMsg={error?.info?.detail || error.toString()}
       />
     );
@@ -72,11 +74,12 @@ function Main() {
   const introSection = (
     <div className="flex flex-col items-start gap-4">
       <Text as="p">
-        API Keys allow you to access Onyx APIs programmatically. Click the
-        button below to generate a new API Key.
+        {isChinese
+          ? "API 密钥用于以编程方式访问 Clover API。点击下方按钮生成新的 API 密钥。"
+          : "API Keys allow you to access Clover APIs programmatically. Click the button below to generate a new API Key."}
       </Text>
       <CreateButton onClick={() => setShowCreateUpdateForm(true)}>
-        Create API Key
+        {isChinese ? "创建 API 密钥" : "Create API Key"}
       </CreateButton>
     </div>
   );
@@ -112,10 +115,10 @@ function Main() {
       <Modal open={!!fullApiKey}>
         <Modal.Content width="sm" height="sm">
           <Modal.Header
-            title="New API Key"
+            title={isChinese ? "新建 API 密钥" : "New API Key"}
             icon={SvgKey}
             onClose={() => setFullApiKey(null)}
-            description="Make sure you copy your new API key. You won’t be able to see this key again."
+            description={isChinese ? "请复制新的 API 密钥，此密钥之后将无法再次查看。" : "Make sure you copy your new API key. You won’t be able to see this key again."}
           />
           <Modal.Body>
             <Text as="p" className="break-all flex-1">
@@ -132,15 +135,15 @@ function Main() {
 
       <Separator />
 
-      <Title className="mt-6">Existing API Keys</Title>
+      <Title className="mt-6">{isChinese ? "已有 API 密钥" : "Existing API Keys"}</Title>
       <Table className="overflow-visible">
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>API Key</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Regenerate</TableHead>
-            <TableHead>Delete</TableHead>
+            <TableHead>{isChinese ? "名称" : "Name"}</TableHead>
+            <TableHead>{isChinese ? "API 密钥" : "API Key"}</TableHead>
+            <TableHead>{isChinese ? "角色" : "Role"}</TableHead>
+            <TableHead>{isChinese ? "重新生成" : "Regenerate"}</TableHead>
+            <TableHead>{isChinese ? "删除" : "Delete"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

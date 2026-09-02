@@ -25,6 +25,7 @@ import InputTypeIn from "@/refresh-components/inputs/InputTypeIn";
 import { Spinner } from "@/components/Spinner";
 import { useAuthType } from "@/lib/hooks";
 import { SvgDownloadCloud, SvgUser, SvgUserPlus } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 interface CountDisplayProps {
   label: string;
   value: number | null;
@@ -61,6 +62,7 @@ const UsersTables = ({
   isDownloadingUsers: boolean;
   setIsDownloadingUsers: (loading: boolean) => void;
 }) => {
+  const isChinese = useLanguage().language === "zh";
   const [currentUsersCount, setCurrentUsersCount] = useState<number | null>(
     null
   );
@@ -139,7 +141,7 @@ const UsersTables = ({
   if (domainsError) {
     return (
       <ErrorCallout
-        errorTitle="Error loading valid domains"
+        errorTitle={isChinese ? "加载有效域名失败" : "Error loading valid domains"}
         errorMsg={domainsError?.info?.detail}
       />
     );
@@ -147,18 +149,18 @@ const UsersTables = ({
 
   const tabs = SimpleTabs.generateTabs({
     current: {
-      name: "Current Users",
+      name: isChinese ? "当前用户" : "Current Users",
       content: (
         <Card className="w-full">
           <CardHeader>
             <div className="flex justify-between items-center gap-1">
-              <CardTitle>Current Users</CardTitle>
+              <CardTitle>{isChinese ? "当前用户" : "Current Users"}</CardTitle>
               <Button
                 leftIcon={SvgDownloadCloud}
                 disabled={isDownloadingUsers}
                 onClick={() => downloadAllUsers()}
               >
-                {isDownloadingUsers ? "Downloading..." : "Download CSV"}
+                {isDownloadingUsers ? (isChinese ? "下载中..." : "Downloading...") : isChinese ? "下载 CSV" : "Download CSV"}
               </Button>
             </div>
           </CardHeader>
@@ -170,7 +172,7 @@ const UsersTables = ({
               invitedUsersMutate={invitedUsersMutate}
               countDisplay={
                 <CountDisplay
-                  label="Total users"
+                  label={isChinese ? "用户总数" : "Total users"}
                   value={currentUsersCount}
                   isLoading={currentUsersLoading}
                 />
@@ -188,14 +190,14 @@ const UsersTables = ({
       ),
     },
     invited: {
-      name: "Invited Users",
+      name: isChinese ? "已邀请用户" : "Invited Users",
       content: (
         <Card className="w-full">
           <CardHeader>
             <div className="flex justify-between items-center gap-1">
-              <CardTitle>Invited Users</CardTitle>
+              <CardTitle>{isChinese ? "已邀请用户" : "Invited Users"}</CardTitle>
               <CountDisplay
-                label="Total invited"
+                label={isChinese ? "邀请总数" : "Total invited"}
                 value={invitedUsersCount}
                 isLoading={invitedUsersLoading}
               />
@@ -216,14 +218,14 @@ const UsersTables = ({
     },
     ...(NEXT_PUBLIC_CLOUD_ENABLED && {
       pending: {
-        name: "Pending Users",
+        name: isChinese ? "待处理用户" : "Pending Users",
         content: (
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center gap-1">
-                <CardTitle>Pending Users</CardTitle>
+                <CardTitle>{isChinese ? "待处理用户" : "Pending Users"}</CardTitle>
                 <CountDisplay
-                  label="Total pending"
+                  label={isChinese ? "待处理总数" : "Total pending"}
                   value={pendingUsersCount}
                   isLoading={pendingUsersLoading}
                 />
@@ -249,6 +251,7 @@ const UsersTables = ({
 };
 
 const SearchableTables = () => {
+  const isChinese = useLanguage().language === "zh";
   const { popup, setPopup } = usePopup();
   const [query, setQuery] = useState("");
   const [isDownloadingUsers, setIsDownloadingUsers] = useState(false);
@@ -260,7 +263,7 @@ const SearchableTables = () => {
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-row items-center gap-2">
           <InputTypeIn
-            placeholder="Search"
+            placeholder={isChinese ? "搜索" : "Search"}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -283,6 +286,7 @@ const AddUserButton = ({
   setPopup: (spec: PopupSpec) => void;
 }) => {
   const [bulkAddUsersModal, setBulkAddUsersModal] = useState(false);
+  const isChinese = useLanguage().language === "zh";
   const [firstUserConfirmationModal, setFirstUserConfirmationModal] =
     useState(false);
   const authType = useAuthType();
@@ -306,7 +310,7 @@ const AddUserButton = ({
     );
     setBulkAddUsersModal(false);
     setPopup({
-      message: "Users invited!",
+      message: isChinese ? "用户已邀请！" : "Users invited!",
       type: "success",
     });
   };
@@ -314,7 +318,7 @@ const AddUserButton = ({
   const onFailure = async (res: Response) => {
     const error = (await res.json()).detail;
     setPopup({
-      message: `Failed to invite users - ${error}`,
+      message: `${isChinese ? "邀请用户失败" : "Failed to invite users"} - ${error}`,
       type: "error",
     });
   };
@@ -335,17 +339,17 @@ const AddUserButton = ({
   return (
     <>
       <CreateButton primary onClick={handleInviteClick}>
-        Invite Users
+        {isChinese ? "邀请用户" : "Invite Users"}
       </CreateButton>
 
       {firstUserConfirmationModal && (
         <ConfirmEntityModal
-          entityType="First User Invitation"
+          entityType={isChinese ? "首次邀请用户" : "First User Invitation"}
           entityName="your Access Logic"
           onClose={() => setFirstUserConfirmationModal(false)}
           onSubmit={handleConfirmFirstInvite}
-          additionalDetails="After inviting the first user, only invited users will be able to join this platform. This is a security measure to control access to your team."
-          actionButtonText="Continue"
+          additionalDetails={isChinese ? "邀请第一位用户后，只有受邀用户才能加入此平台。这是用于控制团队访问权限的安全措施。" : "After inviting the first user, only invited users will be able to join this platform. This is a security measure to control access to your team."}
+          actionButtonText={isChinese ? "继续" : "Continue"}
         />
       )}
 
@@ -354,15 +358,13 @@ const AddUserButton = ({
           <Modal.Content>
             <Modal.Header
               icon={SvgUserPlus}
-              title="Bulk Add Users"
+              title={isChinese ? "批量添加用户" : "Bulk Add Users"}
               onClose={() => setBulkAddUsersModal(false)}
             />
             <Modal.Body>
               <div className="flex flex-col gap-2">
                 <Text as="p">
-                  Add the email addresses to import, separated by whitespaces.
-                  Invited users will be able to login to this domain with their
-                  email address.
+                  {isChinese ? "输入要导入的邮箱地址，以空格分隔。受邀用户可以使用邮箱登录此域名。" : "Add the email addresses to import, separated by whitespaces. Invited users will be able to login to this domain with their email address."}
                 </Text>
                 <BulkAdd onSuccess={onSuccess} onFailure={onFailure} />
               </div>

@@ -16,6 +16,23 @@ import LLMSelector from "@/components/llm/LLMSelector";
 import { useVisionProviders } from "./hooks/useVisionProviders";
 import InputTextArea from "@/refresh-components/inputs/InputTextArea";
 import { SvgAlertTriangle } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
+
+const SETTINGS_ZH: Record<string, string> = {
+  "Company Name": "公司名称",
+  "Company Description": "公司描述",
+  "Enter company name": "输入公司名称",
+  "Enter company description": "输入公司描述",
+  "Auto-scroll": "自动滚动",
+  "Override default temperature": "允许覆盖默认温度",
+  "Anonymous Users": "匿名用户",
+  "Deep Research": "深度研究",
+  "Disable Default Assistant": "禁用默认助手",
+  "Image Processing": "图像处理",
+  "Enable Image Extraction and Analysis": "启用图像提取与分析",
+  "Enable Search-time Image Analysis": "启用搜索时图像分析",
+  "Maximum Image Size for Analysis (MB)": "分析图像的最大大小（MB）",
+};
 
 export function Checkbox({
   label,
@@ -28,6 +45,9 @@ export function Checkbox({
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const isChinese = useLanguage().language === "zh";
+  const displayLabel = isChinese ? SETTINGS_ZH[label] || label : label;
+  const displaySublabel = isChinese ? SETTINGS_ZH[sublabel || ""] || sublabel : sublabel;
   return (
     <label className="flex text-xs cursor-pointer">
       <input
@@ -38,9 +58,9 @@ export function Checkbox({
       />
       <div>
         <span className="block font-medium text-text-700 dark:text-neutral-100 text-sm">
-          {label}
+          {displayLabel}
         </span>
-        {sublabel && <SubLabel>{sublabel}</SubLabel>}
+        {displaySublabel && <SubLabel>{displaySublabel}</SubLabel>}
       </div>
     </label>
   );
@@ -80,6 +100,7 @@ function IntegerInput({
 }
 
 export function SettingsForm() {
+  const isChinese = useLanguage().language === "zh";
   const router = useRouter();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -226,7 +247,7 @@ export function SettingsForm() {
       <label className="flex flex-col text-sm mb-4">
         <Label>Company Name</Label>
         <SubLabel>
-          Set the company name used for search and chat context.
+          {isChinese ? "设置用于搜索和聊天上下文的公司名称。" : "Set the company name used for search and chat context."}
         </SubLabel>
         <input
           type="text"
@@ -234,22 +255,21 @@ export function SettingsForm() {
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
           onBlur={handleCompanyNameBlur}
-          placeholder="Enter company name"
+          placeholder={isChinese ? "输入公司名称" : "Enter company name"}
         />
       </label>
 
       <label className="flex flex-col text-sm mb-4">
         <Label>Company Description</Label>
         <SubLabel>
-          Provide a short description of the company for search and chat
-          context.
+          {isChinese ? "提供用于搜索和聊天上下文的公司简短描述。" : "Provide a short description of the company for search and chat context."}
         </SubLabel>
         <InputTextArea
           className="mt-1 w-full max-w-xl"
           value={companyDescription}
           onChange={(event) => setCompanyDescription(event.target.value)}
           onBlur={handleCompanyDescriptionBlur}
-          placeholder="Enter company description"
+          placeholder={isChinese ? "输入公司描述" : "Enter company description"}
           rows={4}
         />
       </label>

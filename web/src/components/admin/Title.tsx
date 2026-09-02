@@ -20,6 +20,7 @@ const ADMIN_TITLE_ZH: Record<string, string> = {
   "Token Rate Limits": "令牌速率限制",
   "Default Assistant": "默认助手",
   LLM: "大语言模型",
+  "LLM Setup": "大语言模型设置",
   "Web Search": "网页搜索",
   "Image Generation": "图像生成",
   "Search Settings": "搜索设置",

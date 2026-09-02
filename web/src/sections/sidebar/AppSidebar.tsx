@@ -622,7 +622,7 @@ const MemoizedAppSidebarInner = memo(
                   collisionDetection={closestCenter}
                   onDragEnd={handleAgentDragEnd}
                 >
-                  <SidebarSection title="Agents">
+                  <SidebarSection title={isChinese ? "助手" : "Agents"}>
                     <SortableContext
                       items={visibleAgentIds}
                       strategy={verticalListSortingStrategy}
@@ -650,12 +650,12 @@ const MemoizedAppSidebarInner = memo(
                 >
                   {/* Projects */}
                   <SidebarSection
-                    title="Projects"
+                    title={isChinese ? "项目" : "Projects"}
                     action={
                       <IconButton
                         icon={SvgFolderPlus}
                         internal
-                        tooltip="New Project"
+                        tooltip={isChinese ? "新建项目" : "New Project"}
                         onClick={() => createProjectModal.toggle(true)}
                       />
                     }

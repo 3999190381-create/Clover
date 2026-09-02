@@ -31,6 +31,7 @@ import {
   SvgUser,
 } from "@opal/icons";
 import useOnMount from "@/hooks/useOnMount";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface AgentsSectionProps {
   title: string;
@@ -63,6 +64,7 @@ function AgentsSection({ title, description, agents }: AgentsSectionProps) {
 }
 
 export default function AgentsNavigationPage() {
+  const isChinese = useLanguage().language === "zh";
   const { agents } = useAgents();
   const [creatorFilterOpen, setCreatorFilterOpen] = useState(false);
   const [actionsFilterOpen, setActionsFilterOpen] = useState(false);
@@ -425,12 +427,12 @@ export default function AgentsNavigationPage() {
     >
       <SettingsLayouts.Header
         icon={SvgOnyxOctagon}
-        title="Agents & Assistants"
-        description="Customize AI behavior and knowledge for you and your team’s use cases."
+        title={isChinese ? "助手" : "Agents & Assistants"}
+        description={isChinese ? "为你和团队的使用场景定制 AI 行为与知识。" : "Customize AI behavior and knowledge for you and your team’s use cases."}
         rightChildren={
           <div data-testid="AgentsPage/new-agent-button">
             <Button href="/chat/agents/create" leftIcon={SvgPlus}>
-              New Agent
+              {isChinese ? "新建助手" : "New Agent"}
             </Button>
           </div>
         }
@@ -440,7 +442,7 @@ export default function AgentsNavigationPage() {
             <div className="flex-[2]">
               <InputTypeIn
                 ref={searchInputRef}
-                placeholder="Search agents..."
+                placeholder={isChinese ? "搜索助手..." : "Search agents..."}
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 leftSearchIcon
@@ -452,8 +454,8 @@ export default function AgentsNavigationPage() {
                 onValueChange={(value) => setActiveTab(value as "all" | "your")}
               >
                 <Tabs.List>
-                  <Tabs.Trigger value="all">All Agents</Tabs.Trigger>
-                  <Tabs.Trigger value="your">Your Agents</Tabs.Trigger>
+                  <Tabs.Trigger value="all">{isChinese ? "全部助手" : "All Agents"}</Tabs.Trigger>
+                  <Tabs.Trigger value="your">{isChinese ? "我的助手" : "Your Agents"}</Tabs.Trigger>
                 </Tabs.List>
               </Tabs>
             </div>
@@ -650,19 +652,19 @@ export default function AgentsNavigationPage() {
             className="w-full h-full flex flex-col items-center justify-center py-12"
             text03
           >
-            No Agents found
+            {isChinese ? "未找到助手" : "No Agents found"}
           </Text>
         ) : (
           <>
             <AgentsSection
-              title="Featured Agents"
-              description="Curated by your team"
+              title={isChinese ? "精选助手" : "Featured Agents"}
+              description={isChinese ? "由你的团队精选" : "Curated by your team"}
               agents={featuredAgents}
             />
-            <AgentsSection title="All Agents" agents={allAgents} />
+            <AgentsSection title={isChinese ? "全部助手" : "All Agents"} agents={allAgents} />
             <CounterSeparator
               count={agentCount}
-              text={agentCount === 1 ? "Agent" : "Agents"}
+              text={isChinese ? "助手" : agentCount === 1 ? "Agent" : "Agents"}
             />
           </>
         )}

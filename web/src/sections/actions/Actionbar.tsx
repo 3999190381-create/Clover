@@ -6,6 +6,7 @@ import Button from "@/refresh-components/buttons/Button";
 import InputTypeIn from "@/refresh-components/inputs/InputTypeIn";
 import Text from "@/refresh-components/texts/Text";
 import { SvgPlusCircle } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 interface ActionbarProps {
   hasActions: boolean;
   searchQuery?: string;
@@ -23,6 +24,7 @@ const Actionbar: React.FC<ActionbarProps> = ({
   className,
   buttonText = "Add MCP Server",
 }) => {
+  const isChinese = useLanguage().language === "zh";
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchQueryChange?.(e.target.value);
   };
@@ -38,7 +40,7 @@ const Actionbar: React.FC<ActionbarProps> = ({
       {hasActions ? (
         <div className="flex-1 min-w-[160px]">
           <InputTypeIn
-            placeholder="Search servers…"
+            placeholder={isChinese ? "搜索服务器…" : "Search servers…"}
             value={searchQuery}
             onChange={handleSearchChange}
             leftSearchIcon
@@ -49,14 +51,20 @@ const Actionbar: React.FC<ActionbarProps> = ({
       ) : (
         <div className="flex-1">
           <Text as="p" mainUiMuted text03>
-            Connect MCP server to add custom actions.
+            {isChinese ? "连接 MCP 服务器以添加自定义操作。" : "Connect MCP server to add custom actions."}
           </Text>
         </div>
       )}
 
       <div className="flex gap-2 items-center justify-end">
         <Button main primary leftIcon={SvgPlusCircle} onClick={onAddAction}>
-          {buttonText}
+          {isChinese
+            ? buttonText === "Add MCP Server"
+              ? "添加 MCP 服务器"
+              : buttonText === "Add OpenAPI Action"
+                ? "添加 OpenAPI 操作"
+                : buttonText
+            : buttonText}
         </Button>
       </div>
     </div>

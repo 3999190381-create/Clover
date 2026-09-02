@@ -17,12 +17,14 @@ import { createBotConfig, deleteBotConfig } from "@/app/admin/discord-bot/lib";
 import { PopupSpec } from "@/components/admin/connectors/Popup";
 import { ConfirmEntityModal } from "@/components/modals/ConfirmEntityModal";
 import { getFormattedDateTime } from "@/lib/dateUtils";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface Props {
   setPopup: (popup: PopupSpec) => void;
 }
 
 export function BotConfigCard({ setPopup }: Props) {
+  const isChinese = useLanguage().language === "zh";
   const {
     data: botConfig,
     isLoading,
@@ -50,7 +52,7 @@ export function BotConfigCard({ setPopup }: Props) {
           alignItems="center"
         >
           <Text mainContentEmphasis text05>
-            Bot Token
+            {isChinese ? "机器人令牌" : "Bot Token"}
           </Text>
         </Section>
         <ThreeDotsLoader />
@@ -63,7 +65,7 @@ export function BotConfigCard({ setPopup }: Props) {
 
   const handleSaveToken = async () => {
     if (!botToken.trim()) {
-      setPopup({ type: "error", message: "Please enter a bot token" });
+      setPopup({ type: "error", message: isChinese ? "请输入机器人令牌" : "Please enter a bot token" });
       return;
     }
 
@@ -72,12 +74,12 @@ export function BotConfigCard({ setPopup }: Props) {
       await createBotConfig(botToken.trim());
       setBotToken("");
       refreshBotConfig();
-      setPopup({ type: "success", message: "Bot token saved successfully" });
+      setPopup({ type: "success", message: isChinese ? "机器人令牌已保存" : "Bot token saved successfully" });
     } catch (err) {
       setPopup({
         type: "error",
         message:
-          err instanceof Error ? err.message : "Failed to save bot token",
+          err instanceof Error ? err.message : isChinese ? "保存机器人令牌失败" : "Failed to save bot token",
       });
     } finally {
       setIsSubmitting(false);
@@ -89,12 +91,12 @@ export function BotConfigCard({ setPopup }: Props) {
     try {
       await deleteBotConfig();
       refreshBotConfig();
-      setPopup({ type: "success", message: "Bot token deleted" });
+      setPopup({ type: "success", message: isChinese ? "机器人令牌已删除" : "Bot token deleted" });
     } catch (err) {
       setPopup({
         type: "error",
         message:
-          err instanceof Error ? err.message : "Failed to delete bot token",
+          err instanceof Error ? err.message : isChinese ? "删除机器人令牌失败" : "Failed to delete bot token",
       });
     } finally {
       setIsSubmitting(false);
@@ -107,29 +109,29 @@ export function BotConfigCard({ setPopup }: Props) {
       {showDeleteConfirm && (
         <ConfirmEntityModal
           danger
-          entityType="Discord bot token"
-          entityName="Discord Bot Token"
+          entityType={isChinese ? "Discord 机器人令牌" : "Discord bot token"}
+          entityName={isChinese ? "Discord 机器人令牌" : "Discord Bot Token"}
           onClose={() => setShowDeleteConfirm(false)}
           onSubmit={handleDeleteToken}
-          additionalDetails="This will disconnect your Discord bot. You will need to re-enter the token to use the bot again."
+          additionalDetails={isChinese ? "这将断开 Discord 机器人连接。再次使用前需要重新输入令牌。" : "This will disconnect your Discord bot. You will need to re-enter the token to use the bot again."}
         />
       )}
       <Card>
         <Section flexDirection="row" justifyContent="between">
           <Section flexDirection="row" gap={0.5} width="fit">
             <Text mainContentEmphasis text05>
-              Bot Token
+              {isChinese ? "机器人令牌" : "Bot Token"}
             </Text>
             {isConfigured ? (
-              <Badge variant="success">Configured</Badge>
+              <Badge variant="success">{isChinese ? "已配置" : "Configured"}</Badge>
             ) : (
-              <Badge variant="secondary">Not Configured</Badge>
+              <Badge variant="secondary">{isChinese ? "未配置" : "Not Configured"}</Badge>
             )}
           </Section>
           {isConfigured && (
             <SimpleTooltip
-              tooltip={
-                hasServerConfigs ? "Delete server configs first" : undefined
+                tooltip={
+                hasServerConfigs ? (isChinese ? "请先删除服务器配置" : "Delete server configs first") : undefined
               }
               disabled={!hasServerConfigs}
             >
@@ -138,7 +140,7 @@ export function BotConfigCard({ setPopup }: Props) {
                 disabled={isSubmitting || hasServerConfigs}
                 danger
               >
-                Delete Discord Token
+                {isChinese ? "删除 Discord 令牌" : "Delete Discord Token"}
               </Button>
             </SimpleTooltip>
           )}
@@ -147,29 +149,28 @@ export function BotConfigCard({ setPopup }: Props) {
         {isConfigured ? (
           <Section flexDirection="column" alignItems="start" gap={0.5}>
             <Text text03 secondaryBody>
-              Your Discord bot token is configured.
+              {isChinese ? "Discord 机器人令牌已配置。" : "Your Discord bot token is configured."}
               {botConfig?.created_at && (
                 <>
                   {" "}
-                  Added {getFormattedDateTime(new Date(botConfig.created_at))}.
+                  {isChinese ? "添加于" : "Added"} {getFormattedDateTime(new Date(botConfig.created_at))}。
                 </>
               )}
             </Text>
             <Text text03 secondaryBody>
-              To change the token, delete the current one and add a new one.
+              {isChinese ? "如需更换令牌，请删除当前令牌后重新添加。" : "To change the token, delete the current one and add a new one."}
             </Text>
           </Section>
         ) : (
           <Section flexDirection="column" alignItems="start" gap={0.75}>
             <Text text03 secondaryBody>
-              Enter your Discord bot token to enable the bot. You can get this
-              from the Discord Developer Portal.
+              {isChinese ? "输入 Discord 机器人令牌以启用机器人。令牌可从 Discord 开发者门户获取。" : "Enter your Discord bot token to enable the bot. You can get this from the Discord Developer Portal."}
             </Text>
             <Section flexDirection="row" alignItems="end" gap={0.5}>
               <PasswordInputTypeIn
                 value={botToken}
                 onChange={(e) => setBotToken(e.target.value)}
-                placeholder="Enter bot token..."
+                placeholder={isChinese ? "输入机器人令牌..." : "Enter bot token..."}
                 disabled={isSubmitting}
                 className="flex-1"
               />
@@ -177,7 +178,7 @@ export function BotConfigCard({ setPopup }: Props) {
                 onClick={handleSaveToken}
                 disabled={isSubmitting || !botToken.trim()}
               >
-                {isSubmitting ? "Saving..." : "Save Token"}
+                {isSubmitting ? (isChinese ? "保存中..." : "Saving...") : isChinese ? "保存令牌" : "Save Token"}
               </Button>
             </Section>
           </Section>

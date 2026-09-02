@@ -22,6 +22,7 @@ import {
   SvgOnyxLogo,
   SvgX,
 } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 
 import { WebProviderSetupModal } from "@/app/admin/configuration/web-search/WebProviderSetupModal";
 import {
@@ -97,6 +98,7 @@ function HoverIconButton({
 }
 
 export default function Page() {
+  const isChinese = useLanguage().language === "zh";
   const [searchModal, dispatchSearchModal] = useReducer(
     WebProviderModalReducer,
     initialWebProviderModalState
@@ -831,7 +833,7 @@ export default function Page() {
         <AdminPageTitle icon={SvgGlobe} title="Web Search" />
         <div className="pt-4 pb-4">
           <Text as="p" className="text-text-dark">
-            Search settings for external search across the internet.
+            {isChinese ? "配置互联网外部搜索。" : "Search settings for external search across the internet."}
           </Text>
         </div>
 
@@ -841,7 +843,7 @@ export default function Page() {
           <div className="flex w-full max-w-[960px] flex-col gap-3">
             <div className="flex flex-col gap-0.5">
               <Text as="p" mainContentEmphasis text05>
-                Search Engine
+                {isChinese ? "搜索引擎" : "Search Engine"}
               </Text>
               <Text
                 as="p"
@@ -849,8 +851,7 @@ export default function Page() {
                 secondaryBody
                 text03
               >
-                External search engine API used for web search result URLs,
-                snippets, and metadata.
+                {isChinese ? "用于获取网页搜索结果 URL、摘要和元数据的外部搜索引擎 API。" : "External search engine API used for web search result URLs, snippets, and metadata."}
               </Text>
             </div>
 

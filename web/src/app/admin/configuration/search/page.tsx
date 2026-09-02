@@ -20,6 +20,7 @@ import CardSection from "@/components/admin/CardSection";
 import { ErrorCallout } from "@/components/ErrorCallout";
 import { usePopupFromQuery } from "@/components/popup/PopupFromQuery";
 import { SvgSearch } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
 export interface EmbeddingDetails {
   api_key: string;
   custom_config: any;
@@ -28,6 +29,7 @@ export interface EmbeddingDetails {
 }
 
 function Main() {
+  const isChinese = useLanguage().language === "zh";
   const settings = useContext(SettingsContext);
   const { popup: searchSettingsPopup } = usePopupFromQuery({
     "search-settings": {
@@ -75,7 +77,7 @@ function Main() {
     !currentEmeddingModel ||
     futureEmeddingModelError
   ) {
-    return <ErrorCallout errorTitle="Failed to fetch embedding model status" />;
+    return <ErrorCallout errorTitle={isChinese ? "获取嵌入模型状态失败" : "Failed to fetch embedding model status"} />;
   }
 
   return (
@@ -85,19 +87,18 @@ function Main() {
         <>
           {settings?.settings.needs_reindexing && (
             <p className="max-w-3xl">
-              Your search settings are currently out of date! We recommend
-              updating your search settings and re-indexing.
+              {isChinese ? "当前搜索设置已过期，建议更新搜索设置并重新建立索引。" : "Your search settings are currently out of date! We recommend updating your search settings and re-indexing."}
             </p>
           )}
-          <Title className="mb-6 mt-8 !text-2xl">Embedding Model</Title>
+          <Title className="mb-6 mt-8 !text-2xl">{isChinese ? "嵌入模型" : "Embedding Model"}</Title>
 
           {currentEmeddingModel ? (
             <ModelPreview model={currentEmeddingModel} display showDetails />
           ) : (
-            <Title className="mt-8 mb-4">Choose your Embedding Model</Title>
+            <Title className="mt-8 mb-4">{isChinese ? "选择嵌入模型" : "Choose your Embedding Model"}</Title>
           )}
 
-          <Title className="mb-2 mt-8 !text-2xl">Post-processing</Title>
+          <Title className="mb-2 mt-8 !text-2xl">{isChinese ? "后处理" : "Post-processing"}</Title>
 
           <CardSection className="!mr-auto mt-8 !w-96 shadow-lg bg-background-tint-00 rounded-16">
             {searchSettings && (
@@ -105,14 +106,14 @@ function Main() {
                 <div className="px-1 w-full rounded-lg">
                   <div className="space-y-4">
                     <div>
-                      <Text className="font-semibold">Reranking Model</Text>
+                      <Text className="font-semibold">{isChinese ? "重排模型" : "Reranking Model"}</Text>
                       <Text className="text-text-700">
-                        {searchSettings.rerank_model_name || "Not set"}
+                        {searchSettings.rerank_model_name || (isChinese ? "未设置" : "Not set")}
                       </Text>
                     </div>
 
                     <div>
-                      <Text className="font-semibold">Results to Rerank</Text>
+                      <Text className="font-semibold">{isChinese ? "重排结果数" : "Results to Rerank"}</Text>
                       <Text className="text-text-700">
                         {searchSettings.num_rerank}
                       </Text>
@@ -120,36 +121,36 @@ function Main() {
 
                     <div>
                       <Text className="font-semibold">
-                        Multilingual Expansion
+                        {isChinese ? "多语言扩展" : "Multilingual Expansion"}
                       </Text>
                       <Text className="text-text-700">
                         {searchSettings.multilingual_expansion.length > 0
                           ? searchSettings.multilingual_expansion.join(", ")
-                          : "None"}
+                          : isChinese ? "无" : "None"}
                       </Text>
                     </div>
 
                     <div>
-                      <Text className="font-semibold">Multipass Indexing</Text>
+                      <Text className="font-semibold">{isChinese ? "多轮索引" : "Multipass Indexing"}</Text>
                       <Text className="text-text-700">
                         {searchSettings.multipass_indexing
-                          ? "Enabled"
-                          : "Disabled"}
+                          ? isChinese ? "已启用" : "Enabled"
+                          : isChinese ? "已停用" : "Disabled"}
                       </Text>
                     </div>
 
                     <div>
-                      <Text className="font-semibold">Contextual RAG</Text>
+                      <Text className="font-semibold">{isChinese ? "上下文 RAG" : "Contextual RAG"}</Text>
                       <Text className="text-text-700">
                         {searchSettings.enable_contextual_rag
-                          ? "Enabled"
-                          : "Disabled"}
+                          ? isChinese ? "已启用" : "Enabled"
+                          : isChinese ? "已停用" : "Disabled"}
                       </Text>
                     </div>
 
                     <div>
                       <Text className="font-semibold">
-                        Disable Reranking for Streaming
+                        {isChinese ? "流式输出时禁用重排" : "Disable Reranking for Streaming"}
                       </Text>
                       <Text className="text-text-700">
                         {searchSettings.disable_rerank_for_streaming
@@ -165,7 +166,7 @@ function Main() {
 
           <div className="mt-4">
             <Button action href="/admin/embeddings">
-              Update Search Settings
+              {isChinese ? "更新搜索设置" : "Update Search Settings"}
             </Button>
           </div>
         </>

@@ -14,6 +14,7 @@ import { TableHeader } from "@/components/ui/table";
 import { InviteUserButton } from "./buttons/InviteUserButton";
 import { ErrorCallout } from "@/components/ErrorCallout";
 import { FetchError } from "@/lib/fetcher";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const USERS_PER_PAGE = 10;
 
@@ -34,10 +35,11 @@ const InvitedUserTable = ({
   isLoading,
   q,
 }: Props) => {
+  const isChinese = useLanguage().language === "zh";
   const [currentPageNum, setCurrentPageNum] = useState<number>(1);
 
   if (!users.length)
-    return <p>Users that have been invited will show up here</p>;
+    return <p>{isChinese ? "已邀请的用户会显示在这里" : "Users that have been invited will show up here"}</p>;
 
   const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
 
@@ -59,7 +61,7 @@ const InvitedUserTable = ({
   if (error) {
     return (
       <ErrorCallout
-        errorTitle="Error loading users"
+        errorTitle={isChinese ? "加载用户失败" : "Error loading users"}
         errorMsg={error?.info?.detail}
       />
     );
@@ -70,9 +72,9 @@ const InvitedUserTable = ({
       <Table className="overflow-visible">
         <TableHeader>
           <TableRow>
-            <TableHead>Email</TableHead>
+            <TableHead>{isChinese ? "邮箱" : "Email"}</TableHead>
             <TableHead>
-              <div className="flex justify-end">Actions</div>
+              <div className="flex justify-end">{isChinese ? "操作" : "Actions"}</div>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -96,7 +98,7 @@ const InvitedUserTable = ({
           ) : (
             <TableRow>
               <TableCell colSpan={2} className="h-24 text-center">
-                {`No users found matching "${q}"`}
+                {isChinese ? `没有找到与“${q}”匹配的用户` : `No users found matching "${q}"`}
               </TableCell>
             </TableRow>
           )}
