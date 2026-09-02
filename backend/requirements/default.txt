@@ -204,7 +204,7 @@ dateparser==1.2.2
     # via htmldate
 ddtrace==3.10.0
     # via onyx
-decorator==5.2.1
+decorator==5.3.1
     # via retry
 defusedxml==0.7.1
     # via
