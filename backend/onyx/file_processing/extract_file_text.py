@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 logger = setup_logger()
 
 TEXT_SECTION_SEPARATOR = "\n\n"
+PDF_PAGE_SEPARATOR = "\f"
 
 _MARKITDOWN_CONVERTER: Optional["MarkItDown"] = None
 
@@ -226,9 +227,9 @@ def read_pdf_file(
                 ):
                     metadata[clean_key] = ", ".join(value)
 
-        text = TEXT_SECTION_SEPARATOR.join(
-            page.extract_text() for page in pdf_reader.pages
-        )
+        # Preserve page boundaries so indexing preparation can remove repeated
+        # headers, footers, and page numbers before chunking.
+        text = PDF_PAGE_SEPARATOR.join(page.extract_text() for page in pdf_reader.pages)
 
         if extract_images:
             for page_num, page in enumerate(pdf_reader.pages):

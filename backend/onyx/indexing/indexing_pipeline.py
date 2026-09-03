@@ -41,6 +41,7 @@ from onyx.document_index.interfaces import DocumentInsertionRecord
 from onyx.document_index.interfaces import DocumentMetadata
 from onyx.document_index.interfaces import IndexBatchParams
 from onyx.file_processing.image_summarization import summarize_image_with_error_handling
+from onyx.file_processing.structured_text import prepare_text_blocks
 from onyx.file_store.file_store import get_default_file_store
 from onyx.indexing.chunker import Chunker
 from onyx.indexing.embedder import embed_chunks_with_failure_handling
@@ -363,8 +364,10 @@ def process_image_sections(documents: list[Document]) -> list[IndexingDocument]:
     """
     Process all sections in documents by:
     1. Converting both TextSection and ImageSection objects to base Section objects
-    2. Processing ImageSections to generate text summaries using a vision-capable LLM
-    3. Returning IndexingDocument objects with both original and processed sections
+    2. Splitting text at title, paragraph, list, and table boundaries
+    3. Filtering page furniture and tables of contents from text
+    4. Processing ImageSections to generate text summaries using a vision-capable LLM
+    5. Returning IndexingDocument objects with both original and processed sections
 
     Args:
         documents: List of documents with TextSection | ImageSection objects
@@ -379,23 +382,28 @@ def process_image_sections(documents: list[Document]) -> list[IndexingDocument]:
         # Only get the vision LLM if image processing is enabled
         llm = get_default_llm_with_vision()
 
+    def processed_text_sections(document: Document) -> list[Section]:
+        processed: list[Section] = []
+        for section in document.sections:
+            if isinstance(section, TextSection):
+                for block in prepare_text_blocks(section.text or ""):
+                    processed.append(Section(text=block, link=section.link))
+            else:
+                processed.append(
+                    Section(
+                        text="",
+                        link=section.link,
+                        image_file_id=section.image_file_id,
+                    )
+                )
+        return processed
+
     if not llm:
         # Even without LLM, we still convert to IndexingDocument with base Sections
         return [
             IndexingDocument(
                 **document.model_dump(),
-                processed_sections=[
-                    Section(
-                        text=section.text if isinstance(section, TextSection) else "",
-                        link=section.link,
-                        image_file_id=(
-                            section.image_file_id
-                            if isinstance(section, ImageSection)
-                            else None
-                        ),
-                    )
-                    for section in document.sections
-                ],
+                processed_sections=processed_text_sections(document),
             )
             for document in documents
         ]
@@ -452,12 +460,14 @@ def process_image_sections(documents: list[Document]) -> list[IndexingDocument]:
 
             # For TextSection, create a base Section with text and link
             elif isinstance(section, TextSection):
-                processed_section = Section(
-                    text=section.text or "",  # Ensure text is always a string, not None
-                    link=section.link,
-                    image_file_id=None,
-                )
-                processed_sections.append(processed_section)
+                for block in prepare_text_blocks(section.text or ""):
+                    processed_sections.append(
+                        Section(
+                            text=block,
+                            link=section.link,
+                            image_file_id=None,
+                        )
+                    )
 
         # Create IndexingDocument with original sections and processed_sections
         indexed_document = IndexingDocument(
