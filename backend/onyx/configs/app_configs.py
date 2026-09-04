@@ -728,6 +728,25 @@ RECENCY_BIAS_MULTIPLIER = float(os.environ.get("RECENCY_BIAS_MULTIPLIER") or 1.0
 # backend/onyx/document_index/vespa/app_config/schemas/danswer_chunk.sd.jinja.
 RERANK_COUNT = int(os.environ.get("RERANK_COUNT") or 1000)
 
+# Vespa HNSW configuration used by the vector fields in
+# `danswer_chunk.sd.jinja`.  These values are applied while the application
+# package is prepared, so every newly built (or swapped) index gets the same
+# graph construction settings.  They can be tuned for the deployment's
+# recall/memory trade-off without changing the schema template.
+VESPA_HNSW_MAX_LINKS_PER_NODE = int(
+    os.environ.get("VESPA_HNSW_MAX_LINKS_PER_NODE") or 16
+)
+VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT = int(
+    os.environ.get("VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT") or 100
+)
+
+if VESPA_HNSW_MAX_LINKS_PER_NODE < 1:
+    raise ValueError("VESPA_HNSW_MAX_LINKS_PER_NODE must be greater than zero")
+if VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT < 1:
+    raise ValueError(
+        "VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT must be greater than zero"
+    )
+
 
 #####
 # Tool Configs

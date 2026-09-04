@@ -555,8 +555,8 @@ class VespaDocumentIndex(DocumentIndex):
         yql = (
             YQL_BASE.format(index_name=self._index_name)
             + vespa_where_clauses
-            + f"(({{targetHits: {target_hits}}}nearestNeighbor(embeddings, query_embedding)) "
-            + f"or ({{targetHits: {target_hits}}}nearestNeighbor(title_embedding, query_embedding)) "
+            + f"(({{targetHits: {target_hits}, approximate:true}}nearestNeighbor(embeddings, query_embedding)) "
+            + f"or ({{targetHits: {target_hits}, approximate:true}}nearestNeighbor(title_embedding, query_embedding)) "
             + 'or ({grammar: "weakAnd"}userInput(@query)) '
             + f'or ({{defaultIndex: "{CONTENT_SUMMARY}"}}userInput(@query)))'
         )

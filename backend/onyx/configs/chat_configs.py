@@ -37,6 +37,10 @@ TITLE_CONTENT_RATIO = max(
     0, min(1, float(os.environ.get("TITLE_CONTENT_RATIO") or 0.10))
 )
 
+# MMR is applied to the post-RRF candidate set before optional reranking.
+# Lower values favor diversity more strongly; 0.7 keeps relevance dominant.
+MMR_LAMBDA = max(0, min(1, float(os.environ.get("MMR_LAMBDA") or 0.7)))
+
 # Stops streaming answers back to the UI if this pattern is seen:
 STOP_STREAM_PAT = os.environ.get("STOP_STREAM_PAT") or None
 

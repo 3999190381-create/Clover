@@ -55,6 +55,15 @@ schema {{ schema_name }} {
             attribute {
                 distance-metric: angular
             }
+            # Explicit HNSW settings make approximate nearest-neighbor graph
+            # construction deterministic for every index build. Angular
+            # distance is used for both title and content vectors.
+            index {
+                hnsw {
+                    max-links-per-node: {{ hnsw_max_links_per_node | default(16) }}
+                    neighbors-to-explore-at-insert: {{ hnsw_neighbors_to_explore_at_insert | default(100) }}
+                }
+            }
         }
         # Content embeddings (chunk + optional mini chunks embeddings)
         # "t" and "x" are arbitrary names, not special keywords
@@ -62,6 +71,12 @@ schema {{ schema_name }} {
             indexing: attribute | index
             attribute {
                 distance-metric: angular
+            }
+            index {
+                hnsw {
+                    max-links-per-node: {{ hnsw_max_links_per_node | default(16) }}
+                    neighbors-to-explore-at-insert: {{ hnsw_neighbors_to_explore_at_insert | default(100) }}
+                }
             }
         }
         # Starting section of the doc, currently unused as it has been replaced by match highlighting

@@ -14,7 +14,8 @@ Step 2: Recombination
 We use a weighted RRF to combine the search results from the queries above. Each query will have a list of search results with
 some scores however these are downstream of a normalization step so they cannot easily be compared with one another on an
 absolute scale. RRF is a good way to combine these and allows us to give some custom weightings. We also merge document chunks
-that are adjacent to provide more continuous context to the LLM.
+that are adjacent to provide more continuous context to the LLM. Maximal Marginal Relevance (MMR) then reduces near-duplicate
+passages, followed by an optional Cross-Encoder reranker for higher precision.
 
 Step 3: Selection
 We pass the recombined results (truncated set) to the LLM to select the most promising ones to read. This is to reduce noise and
@@ -44,6 +45,7 @@ from sqlalchemy.orm import sessionmaker
 
 from onyx.chat.emitter import Emitter
 from onyx.configs.chat_configs import MAX_CHUNKS_FED_TO_CHAT
+from onyx.configs.chat_configs import MMR_LAMBDA
 from onyx.configs.constants import FederatedConnectorSource
 from onyx.context.search.federated.slack_search import slack_retrieval
 from onyx.context.search.models import BaseFilters
@@ -64,10 +66,12 @@ from onyx.db.federated import (
 from onyx.db.federated import list_federated_connector_oauth_tokens
 from onyx.db.models import Persona
 from onyx.db.models import User
+from onyx.db.search_settings import get_current_search_settings
 from onyx.db.slack_bot import fetch_slack_bots
 from onyx.document_index.interfaces import DocumentIndex
 from onyx.llm.factory import get_llm_token_counter
 from onyx.llm.interfaces import LLM
+from onyx.natural_language_processing.search_nlp_models import RerankingModel
 from onyx.onyxbot.slack.models import SlackContext
 from onyx.secondary_llm_flows.document_filter import select_chunks_for_relevance
 from onyx.secondary_llm_flows.document_filter import select_sections_for_expansion
@@ -114,6 +118,7 @@ from onyx.tools.tool_implementations.utils import (
 )
 from onyx.utils.logger import setup_logger
 from onyx.utils.ranking import diversify_ranked_results
+from onyx.utils.ranking import maximal_marginal_relevance
 from onyx.utils.threadpool_concurrency import run_functions_tuples_in_parallel
 from onyx.utils.timing import log_function_time
 from shared_configs.configs import DOC_EMBEDDING_CONTEXT_SIZE
@@ -276,6 +281,70 @@ class SearchTool(Tool[SearchToolOverrideKwargs]):
             A new SQLAlchemy Session instance
         """
         return self._session_factory()
+
+    @staticmethod
+    def _rerank_sections(
+        sections: list[InferenceSection],
+        query: str,
+        db_session: Session,
+    ) -> list[InferenceSection]:
+        """Apply the configured Cross-Encoder to the MMR candidate set.
+
+        Reranking is intentionally best-effort.  If no model is configured or
+        the provider is temporarily unavailable, the Vespa/MMR ordering is
+        returned unchanged so search remains available.
+        """
+        if not sections or not query:
+            return sections
+
+        try:
+            settings = get_current_search_settings(db_session)
+            rerank_model_name = settings.rerank_model_name
+            if not rerank_model_name or settings.num_rerank <= 0:
+                return sections
+
+            candidate_count = min(settings.num_rerank, len(sections))
+            candidates = sections[:candidate_count]
+            passages = [section.combined_content for section in candidates]
+            reranker = RerankingModel(
+                model_name=rerank_model_name,
+                provider_type=settings.rerank_provider_type,
+                api_key=settings.rerank_api_key,
+                api_url=settings.rerank_api_url,
+            )
+            scores = reranker.predict(query, passages)
+            if len(scores) != len(candidates):
+                raise ValueError(
+                    f"Cross-Encoder returned {len(scores)} scores for "
+                    f"{len(candidates)} passages"
+                )
+        except Exception:
+            logger.exception("Cross-Encoder reranking failed; keeping MMR order")
+            return sections
+
+        ranked_candidates = sorted(
+            zip(scores, candidates, strict=True),
+            key=lambda pair: pair[0],
+            reverse=True,
+        )
+        reranked: list[InferenceSection] = []
+        for score, section in ranked_candidates:
+            # Keep the reranker score available to downstream UI consumers.
+            reranked.append(
+                section.model_copy(
+                    update={
+                        "center_chunk": section.center_chunk.model_copy(
+                            update={"score": float(score)}
+                        )
+                    }
+                )
+            )
+        logger.debug(
+            "Cross-Encoder reranked %d/%d search sections",
+            candidate_count,
+            len(sections),
+        )
+        return reranked + sections[candidate_count:]
 
     def _run_slack_search(self, query: str) -> list[InferenceChunk]:
         """Run Slack federated search for a query.
@@ -704,8 +773,28 @@ class SearchTool(Tool[SearchToolOverrideKwargs]):
             # We can disregard all of the chunks that exceed the num_hits parameter since it's not valid to have
             # documents/contents from things that aren't returned to the user on the frontend
             ranked_sections = merge_individual_chunks(top_chunks)
-            top_sections = diversify_ranked_results(
+            # Reorder the post-RRF candidates to reduce near-duplicate passages
+            # before the more expensive Cross-Encoder call.
+            mmr_sections = maximal_marginal_relevance(
                 ranked_sections,
+                text_extractor=lambda section: section.combined_content,
+                score_extractor=lambda section: section.center_chunk.score,
+                lambda_mult=MMR_LAMBDA,
+            )
+
+            secondary_flows_user_query = (
+                override_kwargs.original_query
+                or semantic_query
+                or (llm_queries[0] if llm_queries else "")
+            )
+            reranked_sections = self._rerank_sections(
+                sections=mmr_sections,
+                query=secondary_flows_user_query,
+                db_session=db_session,
+            )
+
+            top_sections = diversify_ranked_results(
+                reranked_sections,
                 group_extractor=lambda section: section.center_chunk.document_id,
                 max_per_group=MAX_SECTIONS_PER_DOCUMENT_BEFORE_DIVERSITY,
             )[: override_kwargs.num_hits]
@@ -713,12 +802,6 @@ class SearchTool(Tool[SearchToolOverrideKwargs]):
             # Convert InferenceSections to SearchDocs for emission
             search_docs = convert_inference_sections_to_search_docs(
                 top_sections, is_internet=False
-            )
-
-            secondary_flows_user_query = (
-                override_kwargs.original_query
-                or semantic_query
-                or (llm_queries[0] if llm_queries else "")
             )
 
             token_counter = get_llm_token_counter(self.llm)

@@ -20,6 +20,8 @@ from pydantic import BaseModel
 from retry import retry
 
 from onyx.configs.app_configs import BLURB_SIZE
+from onyx.configs.app_configs import VESPA_HNSW_MAX_LINKS_PER_NODE
+from onyx.configs.app_configs import VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT
 from onyx.configs.chat_configs import NUM_RETURNED_HITS
 from onyx.configs.chat_configs import TITLE_CONTENT_RATIO
 from onyx.configs.chat_configs import VESPA_SEARCHER_THREADS
@@ -334,6 +336,8 @@ class VespaIndex(DocumentIndex):
             schema_name=self.index_name,
             dim=primary_embedding_dim,
             embedding_precision=primary_embedding_precision.value,
+            hnsw_max_links_per_node=VESPA_HNSW_MAX_LINKS_PER_NODE,
+            hnsw_neighbors_to_explore_at_insert=VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT,
         )
 
         schema = add_ngrams_to_schema(schema) if needs_reindexing else schema
@@ -350,6 +354,8 @@ class VespaIndex(DocumentIndex):
                 schema_name=self.secondary_index_name,
                 dim=secondary_index_embedding_dim,
                 embedding_precision=secondary_index_embedding_precision.value,
+                hnsw_max_links_per_node=VESPA_HNSW_MAX_LINKS_PER_NODE,
+                hnsw_neighbors_to_explore_at_insert=VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT,
             )
 
             zip_dict[f"schemas/{schema_names[1]}.sd"] = upcoming_schema.encode("utf-8")
@@ -446,6 +452,8 @@ class VespaIndex(DocumentIndex):
                 schema_name=index_name,
                 dim=embedding_dim,
                 embedding_precision=embedding_precision.value,
+                hnsw_max_links_per_node=VESPA_HNSW_MAX_LINKS_PER_NODE,
+                hnsw_neighbors_to_explore_at_insert=VESPA_HNSW_NEIGHBORS_TO_EXPLORE_AT_INSERT,
             )
 
             schema = add_ngrams_to_schema(schema) if needs_reindexing else schema
