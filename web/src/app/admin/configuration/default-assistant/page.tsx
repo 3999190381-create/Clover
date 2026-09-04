@@ -73,7 +73,7 @@ function DefaultAssistantConfig() {
     });
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(errorText || "Failed to update assistant");
+      throw new Error(errorText || "默认助手更新失败");
     }
   };
 
@@ -84,8 +84,8 @@ function DefaultAssistantConfig() {
   if (error) {
     return (
       <ErrorCallout
-        errorTitle="Failed to load configuration"
-        errorMsg="Unable to fetch the default assistant configuration."
+        errorTitle="加载配置失败"
+        errorMsg="无法获取默认助手配置。"
       />
     );
   }
@@ -96,15 +96,14 @@ function DefaultAssistantConfig() {
         {popup}
         <Callout type="notice">
           <p className="mb-3">
-            The default assistant is currently disabled in your workspace
-            settings.
+            当前工作区设置已禁用默认助手。
           </p>
           <p>
-            To configure the default assistant, you must first enable it in{" "}
+            要配置默认助手，请先在{" "}
             <Link href="/admin/settings" className="text-link font-medium">
-              Workspace Settings
+              工作区设置
             </Link>
-            .
+            中启用默认助手。
           </p>
         </Callout>
       </div>
@@ -170,12 +169,12 @@ function DefaultAssistantConfig() {
             await refreshAgents();
 
             setPopup({
-              message: "Default assistant updated successfully!",
+              message: "默认助手已更新！",
               type: "success",
             });
           } catch (error: any) {
             setPopup({
-              message: error.message || "Failed to update assistant",
+              message: error.message || "默认助手更新失败",
               type: "error",
             });
           } finally {
@@ -188,9 +187,7 @@ function DefaultAssistantConfig() {
             <div className="space-y-6">
               <div className="mt-4">
                 <Text as="p" className="text-text-dark">
-                  Configure which capabilities are enabled for the default
-                  assistant in chat. These settings apply to all users who
-                  haven&apos;t customized their assistant preferences.
+                  配置聊天中默认助手启用的能力。这些设置适用于所有未自定义助手偏好的用户。
                 </Text>
               </div>
 
@@ -204,12 +201,12 @@ function DefaultAssistantConfig() {
                     text04
                     className="font-medium text-sm"
                   >
-                    Instructions
+                    指令
                   </Text>
                 </div>
                 <div className="flex items-start gap-1.5 mb-1">
                   <SubLabel>
-                    Add instructions to tailor the behavior of the assistant.
+                    添加指令以定制助手的行为。
                   </SubLabel>
                   <HoverPopup
                     mainContent={
@@ -217,21 +214,18 @@ function DefaultAssistantConfig() {
                     }
                     popupContent={
                       <div className="text-xs space-y-1.5 max-w-xs bg-background-neutral-dark-03 text-text-light-05">
-                        <div>You can use placeholders in your prompt:</div>
+                        <div>提示词中可以使用以下占位符：</div>
                         <div>
                           <span className="font-mono font-semibold">
                             {"{{CURRENT_DATETIME}}"}
                           </span>{" "}
-                          - Injects the current date and day of the week in a
-                          human/LLM readable format.
+                          - 注入当前日期和星期信息，便于人和模型阅读。
                         </div>
                         <div>
                           <span className="font-mono font-semibold">
                             {"{{CITATION_GUIDANCE}}"}
                           </span>{" "}
-                          - Injects instructions to provide citations for facts
-                          found from search tools. This is not included if no
-                          search tools are called.
+                          - 注入搜索结果引用规则；未调用搜索工具时不会加入。
                         </div>
                       </div>
                     }
@@ -249,7 +243,7 @@ function DefaultAssistantConfig() {
                         setFieldValue("isUsingDefault", false);
                       }
                     }}
-                    placeholder="You are a professional email writing assistant that always uses a polite enthusiastic tone, emphasizes action items, and leaves blanks for the human to fill in when you have unknowns"
+                    placeholder="例如：你是一名严谨的知识库问答助手，优先使用有依据的资料回答。"
                   />
                   <div className="flex justify-between items-center mt-2">
                     <button
@@ -264,10 +258,10 @@ function DefaultAssistantConfig() {
                         setFieldValue("isUsingDefault", true);
                       }}
                     >
-                      Reset to Default
+                      重置为默认值
                     </button>
                     <Text as="p" mainUiMuted text03 className="text-sm">
-                      {values.system_prompt.length} characters
+                      {values.system_prompt.length} 个字符
                     </Text>
                   </div>
                 </div>
@@ -284,7 +278,7 @@ function DefaultAssistantConfig() {
 
               <div className="flex justify-end pt-4">
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Save Changes"}
+                  {isSubmitting ? "保存中…" : "保存更改"}
                 </Button>
               </div>
             </div>
@@ -299,7 +293,7 @@ export default function Page() {
   return (
     <>
       <AdminPageTitle
-        title="Default Assistant"
+        title="默认助手"
         icon={
           <SvgOnyxLogo
             width={32}

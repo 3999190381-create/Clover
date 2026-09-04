@@ -4,6 +4,8 @@ import Text from "@/refresh-components/texts/Text";
 import StepSidebar from "@/sections/sidebar/StepSidebarWrapper";
 import { useUser } from "@/components/user/UserProvider";
 import { SvgSettings } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
+import { connectorText } from "@/lib/connectorI18n";
 
 export default function Sidebar() {
   const { formStep, setFormStep, connector, allowAdvanced, allowCreate } =
@@ -11,7 +13,11 @@ export default function Sidebar() {
   const noCredential = credentialTemplates[connector] == null;
 
   const { isAdmin } = useUser();
-  const buttonName = isAdmin ? "Admin Page" : "Curator Page";
+  const { language } = useLanguage();
+  const buttonName = connectorText(
+    isAdmin ? "Admin Page" : "Curator Page",
+    language
+  )!;
 
   const settingSteps = [
     ...(!noCredential ? ["Credential"] : []),
@@ -59,7 +65,7 @@ export default function Sidebar() {
                 </div>
               </div>
               <Text as="p" text04={index <= formStep} text02={index > formStep}>
-                {step}
+                {connectorText(step, language)}
               </Text>
             </div>
           );

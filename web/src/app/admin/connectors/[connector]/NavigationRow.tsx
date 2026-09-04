@@ -1,6 +1,8 @@
 import { useFormContext } from "@/components/context/FormContext";
 import Button from "@/refresh-components/buttons/Button";
 import { SvgArrowLeft, SvgArrowRight, SvgPlusCircle } from "@opal/icons";
+import { useLanguage } from "@/hooks/useLanguage";
+import { connectorText } from "@/lib/connectorI18n";
 
 const NavigationRow = ({
   noAdvanced,
@@ -16,6 +18,7 @@ const NavigationRow = ({
   activatedCredential: boolean;
 }) => {
   const { formStep, prevFormStep, nextFormStep } = useFormContext();
+  const { language } = useLanguage();
 
   return (
     <div className="mt-4 w-full grid grid-cols-3">
@@ -23,7 +26,7 @@ const NavigationRow = ({
         {((formStep > 0 && !noCredentials) ||
           (formStep > 1 && !noAdvanced)) && (
           <Button secondary onClick={prevFormStep} leftIcon={SvgArrowLeft}>
-            Previous
+            {connectorText("Previous", language)}
           </Button>
         )}
       </div>
@@ -34,7 +37,7 @@ const NavigationRow = ({
             rightIcon={SvgPlusCircle}
             onClick={onSubmit}
           >
-            Create Connector
+            {connectorText("Create Connector", language)}
           </Button>
         )}
       </div>
@@ -46,7 +49,7 @@ const NavigationRow = ({
             rightIcon={SvgArrowRight}
             onClick={() => nextFormStep()}
           >
-            Continue
+            {connectorText("Continue", language)}
           </Button>
         )}
         {!noAdvanced && formStep === 1 && (
@@ -56,7 +59,7 @@ const NavigationRow = ({
             rightIcon={SvgArrowRight}
             onClick={() => nextFormStep()}
           >
-            Advanced
+            {connectorText("Advanced", language)}
           </Button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { ValidSources } from "@/lib/types";
 import { getSourceDocLink } from "@/lib/sources";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function ConnectorDocsLink({
   sourceType,
@@ -9,6 +10,7 @@ export default function ConnectorDocsLink({
   className?: string;
 }) {
   const docsLink = getSourceDocLink(sourceType);
+  const { language } = useLanguage();
 
   if (!docsLink) {
     return null;
@@ -18,7 +20,7 @@ export default function ConnectorDocsLink({
 
   return (
     <p className={paragraphClass}>
-      Check out
+      {language === "zh" ? "配置说明请参阅" : "Check out"}
       <a
         className="text-blue-600 hover:underline"
         target="_blank"
@@ -26,9 +28,11 @@ export default function ConnectorDocsLink({
         href={docsLink}
       >
         {" "}
-        our docs{" "}
+        {language === "zh" ? "文档" : "our docs"}{" "}
       </a>
-      for more info on configuring this connector.
+      {language === "zh"
+        ? "，了解如何配置此连接器。"
+        : "for more info on configuring this connector."}
     </p>
   );
 }

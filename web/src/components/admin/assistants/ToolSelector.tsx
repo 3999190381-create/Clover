@@ -55,6 +55,17 @@ export function ToolSelector({
   const pythonTool = tools.find((t) => t.in_code_tool_id === PYTHON_TOOL_ID);
   const openUrlTool = tools.find((t) => t.in_code_tool_id === OPEN_URL_TOOL_ID);
 
+  const localizedToolName = (tool: ToolSnapshot) => {
+    const names: Record<string, string> = {
+      [SEARCH_TOOL_ID]: "内部搜索",
+      [WEB_SEARCH_TOOL_ID]: "网页搜索",
+      [IMAGE_GENERATION_TOOL_ID]: "图像生成",
+      [PYTHON_TOOL_ID]: "代码解释器",
+      [OPEN_URL_TOOL_ID]: "打开网址",
+    };
+    return names[tool.in_code_tool_id] || tool.display_name;
+  };
+
   // Check if Web Search is enabled - if so, OpenURL must be enabled
   const isWebSearchEnabled = webSearchTool && enabledToolsMap[webSearchTool.id];
   const isOpenUrlForced = isWebSearchEnabled;
@@ -150,7 +161,7 @@ export function ToolSelector({
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 mb-2">
         <Text as="p" mainUiBody text04>
-          Built-in Actions
+          内置操作
         </Text>
         <HoverPopup
           mainContent={
@@ -159,28 +170,20 @@ export function ToolSelector({
           popupContent={
             <div className="text-xs space-y-2 max-w-xs bg-background-neutral-dark-03 text-text-light-05">
               <div>
-                <span className="font-semibold">Internal Search:</span> Requires
-                at least one connector to be configured to search your
-                organization&apos;s knowledge base.
+                <span className="font-semibold">内部搜索：</span>至少配置一个连接器后，才能搜索组织知识库。
               </div>
               <div>
-                <span className="font-semibold">Web Search:</span> Configure a
-                provider on the Web Search admin page to enable this tool.
+                <span className="font-semibold">网页搜索：</span>请在“网页搜索”管理页配置服务商后启用此工具。
               </div>
               <div>
-                <span className="font-semibold">Image Generation:</span> Add an
-                OpenAI LLM provider with an API key under Admin → Configuration
-                → LLM.
+                <span className="font-semibold">图像生成：</span>请在“管理面板 → 配置 → 大语言模型”中添加带 API 密钥的 OpenAI 服务商。
               </div>
               <div>
-                <span className="font-semibold">Code Interpreter:</span>{" "}
-                Requires the Code Interpreter service to be configured with a
-                valid base URL.
+                <span className="font-semibold">代码解释器：</span>需要配置有效的代码解释器服务地址。
               </div>
               <div>
                 <div>
-                  <span className="font-semibold">Open URL:</span> Open and read
-                  the content of URLs provided in the conversation.
+                  <span className="font-semibold">打开网址：</span>打开并阅读对话中提供的网址内容。
                 </div>
                 {openUrlTool && setFieldValue && (
                   <label className="flex items-center gap-2 cursor-pointer mt-1.5 ml-1">
@@ -199,10 +202,10 @@ export function ToolSelector({
                       className="h-3.5 w-3.5 rounded border-border-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <span className="text-xs">
-                      Enable Open URL
+                      启用打开网址
                       {isOpenUrlForced && (
                         <span className="text-text-500 ml-1">
-                          (required for Web Search)
+                          （网页搜索必需）
                         </span>
                       )}
                     </span>
@@ -217,8 +220,8 @@ export function ToolSelector({
       {!hideSearchTool && searchTool && (
         <BooleanFormField
           name={`enabled_tools_map.${searchTool.id}`}
-          label={searchTool.display_name}
-          subtext="Search through your organization's knowledge base and documents"
+          label={localizedToolName(searchTool)}
+          subtext="搜索组织知识库和文档"
           disabled={searchToolDisabled}
           disabledTooltip={searchToolDisabledTooltip}
         />
@@ -227,8 +230,8 @@ export function ToolSelector({
       {webSearchTool && (
         <BooleanFormField
           name={`enabled_tools_map.${webSearchTool.id}`}
-          label={webSearchTool.display_name}
-          subtext="Access real-time information and search the web for up-to-date results"
+          label={localizedToolName(webSearchTool)}
+          subtext="获取实时信息并搜索网页中的最新结果"
           onChange={(checked) => {
             // When enabling Web Search, also enable OpenURL
             if (checked && openUrlTool && setFieldValue) {
@@ -241,8 +244,8 @@ export function ToolSelector({
       {imageGenerationTool && (
         <BooleanFormField
           name={`enabled_tools_map.${imageGenerationTool.id}`}
-          label={imageGenerationTool.display_name}
-          subtext="Generate and manipulate images using AI-powered tools."
+          label={localizedToolName(imageGenerationTool)}
+          subtext="使用 AI 工具生成和编辑图像。"
           disabled={imageGenerationDisabled}
           disabledTooltip={imageGenerationDisabledTooltip}
         />
@@ -251,10 +254,9 @@ export function ToolSelector({
       {pythonTool && (
         <BooleanFormField
           name={`enabled_tools_map.${pythonTool.id}`}
-          label={pythonTool.display_name}
+          label={localizedToolName(pythonTool)}
           subtext={
-            "Execute Python code in a secure, isolated environment to " +
-            "analyze data, create visualizations, and perform computations"
+            "在安全隔离环境中运行 Python，用于数据分析、可视化和计算"
           }
         />
       )}
@@ -262,7 +264,7 @@ export function ToolSelector({
       {customTools.length > 0 && (
         <>
           <Text as="p" mainUiBody text04 className="mb-2">
-            OpenAPI Actions
+            OpenAPI 操作
           </Text>
           <MemoizedToolList tools={customTools} />
         </>
@@ -271,7 +273,7 @@ export function ToolSelector({
       {Object.keys(mcpToolsByServer).length > 0 && (
         <>
           <Text as="p" mainUiBody text04 className="mb-2">
-            MCP Actions
+            MCP 操作
           </Text>
           {Object.entries(mcpToolsByServer).map(([serverId, serverTools]) => {
             const serverIdNum = parseInt(serverId);

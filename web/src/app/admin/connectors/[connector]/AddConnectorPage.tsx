@@ -62,6 +62,8 @@ import Text from "@/refresh-components/texts/Text";
 import { SvgKey, SvgAlertCircle } from "@opal/icons";
 import SimpleTooltip from "@/refresh-components/SimpleTooltip";
 import Link from "next/link";
+import { useLanguage } from "@/hooks/useLanguage";
+import { connectorErrorText, connectorText } from "@/lib/connectorI18n";
 
 export interface AdvancedConfig {
   refreshFreq: number;
@@ -131,6 +133,7 @@ export default function AddConnector({
 }: {
   connector: ConfigurableSources;
 }) {
+  const { language } = useLanguage();
   const [currentPageUrl, setCurrentPageUrl] = useState<string | null>(null);
   const [oauthUrl, setOauthUrl] = useState<string | null>(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
@@ -221,7 +224,12 @@ export default function AddConnector({
     return indexingStart ? new Date(indexingStart) : null;
   };
 
-  const displayName = getSourceDisplayName(connector) || connector;
+  const displayName =
+    connector === "github" && language === "zh"
+      ? "GitHub"
+      : getSourceDisplayName(connector) || connector;
+  const localizeError = (message?: string | null) =>
+    connectorErrorText(message, language) ?? message ?? "未知错误";
   const sourceMetadata = getSourceMetadata(connector);
   const hasFederatedOption = sourceMetadata.federated === true;
 
@@ -430,7 +438,7 @@ export default function AddConnector({
               if (isSuccess) {
                 onSuccess();
               } else {
-                setPopup({ message: message, type: "error" });
+                setPopup({ message: localizeError(message), type: "error" });
               }
             }
 
@@ -456,7 +464,9 @@ export default function AddConnector({
                 if (!timeoutErrorHappenedRef.current) {
                   // Only show error if timeout didn't happen
                   setPopup({
-                    message: errorData.message || errorData.detail,
+                    message: localizeError(
+                      errorData.message || errorData.detail
+                    ),
                     type: "error",
                   });
                 }
@@ -464,7 +474,7 @@ export default function AddConnector({
             } else if (isSuccess) {
               onSuccess();
             } else {
-              setPopup({ message: message, type: "error" });
+              setPopup({ message: localizeError(message), type: "error" });
             }
 
             timeoutErrorHappenedRef.current = false;
@@ -545,7 +555,12 @@ export default function AddConnector({
           {formStep == 0 && (
             <CardSection>
               <Text as="p" headingH3 className="pb-2">
-                Select a credential
+                {connectorText("Select a credential", language)}
+              </Text>
+              <Text as="p" text03 secondaryBody className="pb-4">
+                {language === "zh"
+                  ? "选择拥有相应访问权限的凭据；GitHub 令牌失效时请重新创建并授权。"
+                  : "Choose a credential with the required access. Recreate and authorize a GitHub token if it has expired."}
               </Text>
 
               {connector == ValidSources.Gmail ? (

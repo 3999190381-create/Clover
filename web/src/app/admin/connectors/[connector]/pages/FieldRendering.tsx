@@ -15,6 +15,8 @@ import * as InputLayouts from "@/layouts/input-layouts";
 import CheckboxField from "@/refresh-components/form/LabeledCheckboxField";
 import InputTextAreaField from "@/refresh-components/form/InputTextAreaField";
 import Text from "@/refresh-components/texts/Text";
+import { useLanguage } from "@/hooks/useLanguage";
+import { connectorText } from "@/lib/connectorI18n";
 
 // Define a general type for form values
 type FormValues = Record<string, any>;
@@ -33,6 +35,7 @@ const TabsField: FC<TabsFieldProps> = ({
   currentCredential,
 }) => {
   const { setFieldValue } = useFormikContext<FormValues>();
+  const { language } = useLanguage();
 
   const resolvedLabel =
     typeof tabField.label === "function"
@@ -42,13 +45,15 @@ const TabsField: FC<TabsFieldProps> = ({
     typeof tabField.description === "function"
       ? tabField.description(currentCredential)
       : tabField.description;
+  const localizedLabel = connectorText(resolvedLabel, language);
+  const localizedDescription = connectorText(resolvedDescription, language);
 
   return (
     <GeneralLayouts.Section gap={0.5} alignItems="start">
       {tabField.label && (
         <InputLayouts.Label
-          title={resolvedLabel ?? ""}
-          description={resolvedDescription}
+          title={localizedLabel ?? ""}
+          description={localizedDescription}
         />
       )}
 
@@ -77,7 +82,7 @@ const TabsField: FC<TabsFieldProps> = ({
           <Tabs.List>
             {tabField.tabs.map((tab) => (
               <Tabs.Trigger key={tab.value} value={tab.value}>
-                {tab.label}
+                {connectorText(tab.label, language)}
               </Tabs.Trigger>
             ))}
           </Tabs.List>
@@ -126,6 +131,7 @@ export const RenderField: FC<RenderFieldProps> = ({
   currentCredential,
 }) => {
   const { setFieldValue } = useFormikContext<FormValues>(); // Get Formik's context functions
+  const { language } = useLanguage();
 
   const label =
     typeof field.label === "function"
@@ -135,6 +141,9 @@ export const RenderField: FC<RenderFieldProps> = ({
     typeof field.description === "function"
       ? field.description(currentCredential)
       : field.description;
+  const localizedLabel = connectorText(label, language) ?? label;
+  const localizedDescription =
+    connectorText(description, language) ?? description ?? "";
   const disabled =
     typeof field.disabled === "function"
       ? field.disabled(currentCredential)
@@ -169,25 +178,29 @@ export const RenderField: FC<RenderFieldProps> = ({
         <FileInput
           name={field.name}
           isZip={field.type === "zip"}
-          label={label}
+          label={localizedLabel}
           optional={field.optional}
-          description={description}
+          description={localizedDescription}
         />
       ) : field.type === "list" ? (
-        <ListInput name={field.name} label={label} description={description} />
+        <ListInput
+          name={field.name}
+          label={localizedLabel}
+          description={localizedDescription}
+        />
       ) : field.type === "select" ? (
         <SelectInput
           name={field.name}
           optional={field.optional}
-          description={description}
+          description={localizedDescription}
           options={field.options || []}
-          label={label}
+          label={localizedLabel}
         />
       ) : field.type === "multiselect" ? (
         <MultiSelectField
           name={field.name}
-          label={label}
-          subtext={description}
+          label={localizedLabel}
+          subtext={localizedDescription}
           options={
             field.options?.map((option: { value: string; name: string }) => ({
               value: option.value,
@@ -199,9 +212,9 @@ export const RenderField: FC<RenderFieldProps> = ({
         />
       ) : field.type === "number" ? (
         <NumberInput
-          label={label}
+          label={localizedLabel}
           optional={field.optional}
-          description={description}
+          description={localizedDescription}
           name={field.name}
         />
       ) : field.type === "checkbox" ? (
@@ -213,8 +226,8 @@ export const RenderField: FC<RenderFieldProps> = ({
         >
           <CheckboxField
             name={field.name}
-            label={label}
-            sublabel={description}
+            label={localizedLabel}
+            sublabel={localizedDescription}
             disabled={disabled}
             size="lg"
             onChange={(checked) => setFieldValue(field.name, checked)}
@@ -224,8 +237,8 @@ export const RenderField: FC<RenderFieldProps> = ({
         field.isTextArea ? (
           <InputLayouts.Vertical
             name={field.name}
-            title={label}
-            description={description}
+            title={localizedLabel}
+            description={localizedDescription}
             optional={field.optional}
           >
             <InputTextAreaField
@@ -237,10 +250,10 @@ export const RenderField: FC<RenderFieldProps> = ({
           </InputLayouts.Vertical>
         ) : (
           <TextFormField
-            subtext={description}
+            subtext={localizedDescription}
             optional={field.optional}
             type={field.type}
-            label={label}
+            label={localizedLabel}
             name={field.name}
             isTextArea={false}
             defaultHeight={"h-15"}
@@ -251,7 +264,7 @@ export const RenderField: FC<RenderFieldProps> = ({
       ) : field.type === "string_tab" ? (
         <GeneralLayouts.Section>
           <Text text03 secondaryBody>
-            {description}
+            {localizedDescription}
           </Text>
         </GeneralLayouts.Section>
       ) : (
@@ -262,7 +275,7 @@ export const RenderField: FC<RenderFieldProps> = ({
 
   if (field.wrapInCollapsible) {
     return (
-      <CollapsibleSection prompt={label} key={field.name}>
+      <CollapsibleSection prompt={localizedLabel} key={field.name}>
         {fieldContent}
       </CollapsibleSection>
     );
