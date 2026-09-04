@@ -41,7 +41,7 @@ from onyx.document_index.interfaces import DocumentInsertionRecord
 from onyx.document_index.interfaces import DocumentMetadata
 from onyx.document_index.interfaces import IndexBatchParams
 from onyx.file_processing.image_summarization import summarize_image_with_error_handling
-from onyx.file_processing.structured_text import prepare_text_blocks
+from onyx.file_processing.structured_text import prepare_text_blocks_with_context
 from onyx.file_store.file_store import get_default_file_store
 from onyx.indexing.chunker import Chunker
 from onyx.indexing.embedder import embed_chunks_with_failure_handling
@@ -386,8 +386,14 @@ def process_image_sections(documents: list[Document]) -> list[IndexingDocument]:
         processed: list[Section] = []
         for section in document.sections:
             if isinstance(section, TextSection):
-                for block in prepare_text_blocks(section.text or ""):
-                    processed.append(Section(text=block, link=section.link))
+                for block in prepare_text_blocks_with_context(section.text or ""):
+                    processed.append(
+                        Section(
+                            text=block.text,
+                            link=section.link,
+                            semantic_context=block.heading_context or None,
+                        )
+                    )
             else:
                 processed.append(
                     Section(
@@ -460,12 +466,13 @@ def process_image_sections(documents: list[Document]) -> list[IndexingDocument]:
 
             # For TextSection, create a base Section with text and link
             elif isinstance(section, TextSection):
-                for block in prepare_text_blocks(section.text or ""):
+                for block in prepare_text_blocks_with_context(section.text or ""):
                     processed_sections.append(
                         Section(
-                            text=block,
+                            text=block.text,
                             link=section.link,
                             image_file_id=None,
+                            semantic_context=block.heading_context or None,
                         )
                     )
 

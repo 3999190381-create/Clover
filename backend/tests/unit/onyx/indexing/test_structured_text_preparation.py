@@ -29,3 +29,8 @@ def test_process_image_sections_prepares_structured_text(
         "- one\n- two",
     ]
     assert all(section.link == "url" for section in prepared)
+    assert [section.semantic_context for section in prepared] == [
+        "Title",
+        "Title",
+        "Title",
+    ]

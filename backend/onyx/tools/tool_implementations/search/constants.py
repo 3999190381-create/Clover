@@ -27,3 +27,7 @@ FULL_DOC_NUM_CHUNKS_AROUND = 5
 # This avoids documents with good titles or generally strong matches to flood out the rest of the search results.
 # If there are multiple indepedent sections from the doc, this won't truncate it, only if they're connected.
 MAX_CHUNKS_FOR_RELEVANCE = 3
+
+# Preserve multiple strong passages from one document while preventing a long
+# document from consuming the whole Top-K candidate set.
+MAX_SECTIONS_PER_DOCUMENT_BEFORE_DIVERSITY = 2

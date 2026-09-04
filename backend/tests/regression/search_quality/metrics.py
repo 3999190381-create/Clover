@@ -1,4 +1,10 @@
 from collections.abc import Iterable
+from urllib.parse import unquote
+
+
+def ground_truth_link_candidates(doc_link: str) -> list[str]:
+    """Return encoded and decoded forms without changing candidate order."""
+    return list(dict.fromkeys((doc_link, unquote(doc_link))))
 
 
 def calculate_context_metrics(

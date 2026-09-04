@@ -1,4 +1,6 @@
+from onyx.file_processing.structured_text import compact_heading_contexts
 from onyx.file_processing.structured_text import prepare_text_blocks
+from onyx.file_processing.structured_text import prepare_text_blocks_with_context
 
 
 def test_prepare_text_blocks_preserves_structural_boundaries() -> None:
@@ -41,3 +43,34 @@ def test_prepare_text_blocks_filters_single_page_furniture_and_keeps_list_contin
     assert prepare_text_blocks(
         "Header: Internal\n- first item\n  continued detail\nFooter: Internal\n1"
     ) == ["- first item\n  continued detail"]
+
+
+def test_prepare_text_blocks_tracks_hierarchical_heading_context() -> None:
+    blocks = prepare_text_blocks_with_context(
+        "# Guide\n\nIntro\n\n## Install\n\nWindows steps\n\n### Offline\n\nCache wheels"
+    )
+
+    assert [(block.text, block.heading_context) for block in blocks] == [
+        ("# Guide", "Guide"),
+        ("Intro", "Guide"),
+        ("## Install", "Guide > Install"),
+        ("Windows steps", "Guide > Install"),
+        ("### Offline", "Guide > Install > Offline"),
+        ("Cache wheels", "Guide > Install > Offline"),
+    ]
+
+
+def test_prepare_text_blocks_tracks_setext_heading_context() -> None:
+    blocks = prepare_text_blocks_with_context("Guide\n=====\n\nInstall\n-------\n\nRun it")
+
+    assert blocks[-1].heading_context == "Guide > Install"
+
+
+def test_compact_heading_contexts_deduplicates_and_truncates() -> None:
+    assert (
+        compact_heading_contexts(
+            ["Guide > Install", "Guide > Install", "Guide > Offline"],
+            max_chars=30,
+        )
+        == "Guide > Install | Guide > Offl"
+    )

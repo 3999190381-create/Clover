@@ -96,6 +96,9 @@ from onyx.tools.tool_implementations.search.constants import (
 from onyx.tools.tool_implementations.search.constants import (
     MAX_CHUNKS_FOR_RELEVANCE,
 )
+from onyx.tools.tool_implementations.search.constants import (
+    MAX_SECTIONS_PER_DOCUMENT_BEFORE_DIVERSITY,
+)
 from onyx.tools.tool_implementations.search.constants import ORIGINAL_QUERY_WEIGHT
 from onyx.tools.tool_implementations.search.search_utils import (
     expand_section_with_context,
@@ -110,6 +113,7 @@ from onyx.tools.tool_implementations.utils import (
     convert_inference_sections_to_llm_string,
 )
 from onyx.utils.logger import setup_logger
+from onyx.utils.ranking import diversify_ranked_results
 from onyx.utils.threadpool_concurrency import run_functions_tuples_in_parallel
 from onyx.utils.timing import log_function_time
 from shared_configs.configs import DOC_EMBEDDING_CONTEXT_SIZE
@@ -699,9 +703,12 @@ class SearchTool(Tool[SearchToolOverrideKwargs]):
 
             # We can disregard all of the chunks that exceed the num_hits parameter since it's not valid to have
             # documents/contents from things that aren't returned to the user on the frontend
-            top_sections = merge_individual_chunks(top_chunks)[
-                : override_kwargs.num_hits
-            ]
+            ranked_sections = merge_individual_chunks(top_chunks)
+            top_sections = diversify_ranked_results(
+                ranked_sections,
+                group_extractor=lambda section: section.center_chunk.document_id,
+                max_per_group=MAX_SECTIONS_PER_DOCUMENT_BEFORE_DIVERSITY,
+            )[: override_kwargs.num_hits]
 
             # Convert InferenceSections to SearchDocs for emission
             search_docs = convert_inference_sections_to_search_docs(

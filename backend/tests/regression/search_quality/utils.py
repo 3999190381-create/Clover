@@ -13,6 +13,7 @@ from ragas.dataset_schema import EvaluationResult  # type: ignore[import-not-fou
 from ragas.metrics import AnswerCorrectness  # type: ignore[import-not-found,unused-ignore]
 from ragas.metrics import Faithfulness  # type: ignore[import-not-found,unused-ignore]
 from ragas.metrics import ResponseRelevancy  # type: ignore[import-not-found,unused-ignore]
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from onyx.configs.constants import DocumentSource
@@ -29,6 +30,7 @@ from onyx.utils.logger import setup_logger
 from tests.regression.search_quality.models import CombinedMetrics
 from tests.regression.search_quality.models import GroundTruth
 from tests.regression.search_quality.models import RetrievedDocument
+from tests.regression.search_quality.metrics import ground_truth_link_candidates
 
 logger = setup_logger(__name__)
 
@@ -69,7 +71,19 @@ def find_document_id(
     elif ground_truth.doc_source == DocumentSource.FIREFLIES:
         doc_link = doc_link.split("?", 1)[0]
 
-    docs = db_session.query(Document).filter(Document.link.ilike(f"{doc_link}%")).all()
+    # Prefer an exact match. The previous ILIKE pattern treated percent-encoded
+    # URLs (for example Chinese Wikipedia links containing ``%E9``) and
+    # underscores as SQL wildcards, which could silently bind a ground truth to
+    # the wrong document and create false regressions.
+    candidate_links = ground_truth_link_candidates(doc_link)
+    docs = (
+        db_session.query(Document).filter(Document.link.in_(candidate_links)).all()
+    )
+    if not docs:
+        prefix_filters = [
+            Document.link.startswith(link, autoescape=True) for link in candidate_links
+        ]
+        docs = db_session.query(Document).filter(or_(*prefix_filters)).all()
     if len(docs) == 0:
         logger.warning("Could not find ground truth document: %s", doc_link)
         return None

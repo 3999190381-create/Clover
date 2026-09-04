@@ -36,6 +36,10 @@ class Section(BaseModel):
     link: str | None = None
     text: str | None = None
     image_file_id: str | None = None
+    # Indexing-only context such as a Markdown heading breadcrumb. This is kept
+    # separate from ``text`` so retrieval can use it without duplicating
+    # headings in the content shown to users.
+    semantic_context: str | None = None
 
 
 class TextSection(Section):

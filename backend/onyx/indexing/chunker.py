@@ -17,6 +17,7 @@ from onyx.connectors.cross_connector_utils.miscellaneous_utils import (
 )
 from onyx.connectors.models import IndexingDocument
 from onyx.connectors.models import Section
+from onyx.file_processing.structured_text import compact_heading_contexts
 from onyx.indexing.indexing_heartbeat import IndexingHeartbeatInterface
 from onyx.indexing.models import DocAwareChunk
 from onyx.llm.utils import MAX_CONTEXT_TOKENS
@@ -34,6 +35,10 @@ CHUNK_OVERLAP = 0
 # overwhelm the actual contents of the chunk
 MAX_METADATA_PERCENTAGE = 0.25
 CHUNK_MIN_CONTENT = 256
+# Heading breadcrumbs are intentionally compact: enough to preserve the
+# section's subject without crowding the actual chunk content out of the
+# embedding model's context window.
+MAX_SECTION_CONTEXT_CHARS = 240
 
 logger = setup_logger()
 
@@ -69,6 +74,22 @@ def _get_metadata_suffix_for_document_index(
     if include_separator:
         return RETURN_SEPARATOR + metadata_semantic, RETURN_SEPARATOR + metadata_keyword
     return metadata_semantic, metadata_keyword
+
+
+def _add_section_context_to_metadata(
+    metadata_suffix_semantic: str,
+    metadata_suffix_keyword: str,
+    section_contexts: list[str],
+) -> tuple[str, str]:
+    context = compact_heading_contexts(
+        section_contexts, max_chars=MAX_SECTION_CONTEXT_CHARS
+    )
+    if not context:
+        return metadata_suffix_semantic, metadata_suffix_keyword
+
+    semantic = f"{RETURN_SEPARATOR}Section path: {context}"
+    keyword = f"{RETURN_SEPARATOR}{context}"
+    return metadata_suffix_semantic + semantic, metadata_suffix_keyword + keyword
 
 
 def _combine_chunks(chunks: list[DocAwareChunk], large_chunk_id: int) -> DocAwareChunk:
@@ -234,10 +255,16 @@ class Chunker:
         metadata_suffix_semantic: str = "",
         metadata_suffix_keyword: str = "",
         image_file_id: str | None = None,
+        section_contexts: list[str] | None = None,
     ) -> None:
         """
         Helper to create a new DocAwareChunk, append it to chunks_list.
         """
+        chunk_metadata_semantic, chunk_metadata_keyword = _add_section_context_to_metadata(
+            metadata_suffix_semantic,
+            metadata_suffix_keyword,
+            section_contexts or [],
+        )
         new_chunk = DocAwareChunk(
             source_document=document,
             chunk_id=len(chunks_list),
@@ -247,8 +274,8 @@ class Chunker:
             image_file_id=image_file_id,
             section_continuation=is_continuation,
             title_prefix=title_prefix,
-            metadata_suffix_semantic=metadata_suffix_semantic,
-            metadata_suffix_keyword=metadata_suffix_keyword,
+            metadata_suffix_semantic=chunk_metadata_semantic,
+            metadata_suffix_keyword=chunk_metadata_keyword,
             mini_chunk_texts=self._get_mini_chunk_texts(text),
             large_chunk_id=None,
             doc_summary="",
@@ -272,6 +299,7 @@ class Chunker:
         """
         chunks: list[DocAwareChunk] = []
         link_offsets: dict[int, str] = {}
+        section_contexts: list[str] = []
         chunk_text = ""
 
         for section_idx, section in enumerate(sections):
@@ -301,9 +329,11 @@ class Chunker:
                         title_prefix=title_prefix,
                         metadata_suffix_semantic=metadata_suffix_semantic,
                         metadata_suffix_keyword=metadata_suffix_keyword,
+                        section_contexts=section_contexts,
                     )
                     chunk_text = ""
                     link_offsets = {}
+                    section_contexts = []
 
                 # Create a chunk specifically for this image section
                 # (Using the text summary that was generated during processing)
@@ -316,6 +346,7 @@ class Chunker:
                     title_prefix=title_prefix,
                     metadata_suffix_semantic=metadata_suffix_semantic,
                     metadata_suffix_keyword=metadata_suffix_keyword,
+                    section_contexts=[section.semantic_context or ""],
                 )
                 # Continue to next section
                 continue
@@ -335,9 +366,11 @@ class Chunker:
                         title_prefix,
                         metadata_suffix_semantic,
                         metadata_suffix_keyword,
+                        section_contexts=section_contexts,
                     )
                     chunk_text = ""
                     link_offsets = {}
+                    section_contexts = []
 
                 # chunker is in `text` mode
                 split_texts = cast(list[str], self.chunk_splitter.chunk(section_text))
@@ -360,6 +393,7 @@ class Chunker:
                                 title_prefix=title_prefix,
                                 metadata_suffix_semantic=metadata_suffix_semantic,
                                 metadata_suffix_keyword=metadata_suffix_keyword,
+                                section_contexts=[section.semantic_context or ""],
                             )
                     else:
                         self._create_chunk(
@@ -371,6 +405,7 @@ class Chunker:
                             title_prefix=title_prefix,
                             metadata_suffix_semantic=metadata_suffix_semantic,
                             metadata_suffix_keyword=metadata_suffix_keyword,
+                            section_contexts=[section.semantic_context or ""],
                         )
                 continue
 
@@ -386,6 +421,8 @@ class Chunker:
                     chunk_text += SECTION_SEPARATOR
                 chunk_text += section_text
                 link_offsets[current_offset] = section_link_text
+                if section.semantic_context:
+                    section_contexts.append(section.semantic_context)
             else:
                 # finalize the existing chunk
                 self._create_chunk(
@@ -397,9 +434,13 @@ class Chunker:
                     title_prefix,
                     metadata_suffix_semantic,
                     metadata_suffix_keyword,
+                    section_contexts=section_contexts,
                 )
                 # start a new chunk
                 link_offsets = {0: section_link_text}
+                section_contexts = (
+                    [section.semantic_context] if section.semantic_context else []
+                )
                 chunk_text = section_text
 
         # finalize any leftover text chunk
@@ -413,6 +454,7 @@ class Chunker:
                 title_prefix,
                 metadata_suffix_semantic,
                 metadata_suffix_keyword,
+                section_contexts=section_contexts,
             )
         return chunks
 

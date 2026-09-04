@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 from onyx.utils.text_processing import clean_text
 
@@ -39,6 +40,33 @@ _FURNITURE_RE = re.compile(
     r"^(?:header|footer|页眉|页脚)\s*[:：](?:\s*.*)?$|^(?:page\s+)?\d+\s*$",
     re.I,
 )
+
+
+@dataclass(frozen=True)
+class PreparedTextBlock:
+    text: str
+    heading_context: str = ""
+
+
+def compact_heading_contexts(contexts: Iterable[str], max_chars: int) -> str:
+    """Deduplicate breadcrumbs in source order and enforce a small size cap."""
+    unique_contexts = list(dict.fromkeys(context for context in contexts if context))
+    return " | ".join(unique_contexts)[:max_chars].rstrip()
+
+
+def _heading_level_and_text(block: str) -> tuple[int, str] | None:
+    """Return a Markdown heading's level and display text."""
+    lines = block.splitlines()
+    first = lines[0].strip() if lines else ""
+    atx_match = re.match(r"^(#{1,6})\s+(.+?)\s*#*\s*$", first)
+    if atx_match:
+        return len(atx_match.group(1)), atx_match.group(2).strip()
+
+    if len(lines) >= 2 and _SETEXT_RE.match(lines[-1].strip()):
+        heading_text = " ".join(line.strip() for line in lines[:-1]).strip()
+        if heading_text:
+            return (1 if lines[-1].strip().startswith("=") else 2), heading_text
+    return None
 
 
 def _line_kind(line: str) -> str:
@@ -194,4 +222,28 @@ def prepare_text_blocks(text: str) -> list[str]:
         cleaned = clean_text(block)
         if cleaned:
             prepared.append(cleaned)
+    return prepared
+
+
+def prepare_text_blocks_with_context(text: str) -> list[PreparedTextBlock]:
+    """Return clean blocks plus their nearest hierarchical heading path.
+
+    The breadcrumb is indexing metadata, not display content. Keeping it on
+    every block makes chunks split from a long section independently
+    retrievable by the section name.
+    """
+    heading_path: list[str] = []
+    prepared: list[PreparedTextBlock] = []
+    for block in prepare_text_blocks(text):
+        heading = _heading_level_and_text(block)
+        if heading:
+            level, heading_text = heading
+            heading_path = heading_path[: level - 1]
+            heading_path.append(heading_text)
+        prepared.append(
+            PreparedTextBlock(
+                text=block,
+                heading_context=" > ".join(heading_path),
+            )
+        )
     return prepared
