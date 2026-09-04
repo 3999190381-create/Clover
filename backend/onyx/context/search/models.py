@@ -13,6 +13,7 @@ from onyx.db.models import SearchSettings
 from onyx.indexing.models import BaseChunk
 from onyx.indexing.models import IndexingSetting
 from onyx.tools.tool_implementations.web_search.models import WEB_SEARCH_PREFIX
+from shared_configs.configs import DEFAULT_CROSS_ENCODER_MODEL_NAME
 from shared_configs.enums import RerankerProvider
 
 
@@ -43,7 +44,9 @@ class RerankingDetails(BaseModel):
     @classmethod
     def from_db_model(cls, search_settings: SearchSettings) -> "RerankingDetails":
         return cls(
-            rerank_model_name=search_settings.rerank_model_name,
+            rerank_model_name=(
+                search_settings.rerank_model_name or DEFAULT_CROSS_ENCODER_MODEL_NAME
+            ),
             rerank_provider_type=search_settings.rerank_provider_type,
             rerank_api_key=search_settings.rerank_api_key,
             num_rerank=search_settings.num_rerank,
@@ -87,7 +90,9 @@ class SavedSearchSettings(InferenceSettings, IndexingSetting):
             contextual_rag_llm_name=search_settings.contextual_rag_llm_name,
             contextual_rag_llm_provider=search_settings.contextual_rag_llm_provider,
             # Reranking Details
-            rerank_model_name=search_settings.rerank_model_name,
+            rerank_model_name=(
+                search_settings.rerank_model_name or DEFAULT_CROSS_ENCODER_MODEL_NAME
+            ),
             rerank_provider_type=search_settings.rerank_provider_type,
             rerank_api_key=search_settings.rerank_api_key,
             num_rerank=search_settings.num_rerank,

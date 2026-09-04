@@ -72,6 +72,7 @@ from onyx.document_index.interfaces import DocumentIndex
 from onyx.llm.factory import get_llm_token_counter
 from onyx.llm.interfaces import LLM
 from onyx.natural_language_processing.search_nlp_models import RerankingModel
+from shared_configs.configs import DEFAULT_CROSS_ENCODER_MODEL_NAME
 from onyx.onyxbot.slack.models import SlackContext
 from onyx.secondary_llm_flows.document_filter import select_chunks_for_relevance
 from onyx.secondary_llm_flows.document_filter import select_sections_for_expansion
@@ -299,7 +300,11 @@ class SearchTool(Tool[SearchToolOverrideKwargs]):
 
         try:
             settings = get_current_search_settings(db_session)
-            rerank_model_name = settings.rerank_model_name
+            # Existing installations may have a NULL value from before local
+            # Cross-Encoder defaults were introduced.
+            rerank_model_name = (
+                settings.rerank_model_name or DEFAULT_CROSS_ENCODER_MODEL_NAME
+            )
             if not rerank_model_name or settings.num_rerank <= 0:
                 return sections
 

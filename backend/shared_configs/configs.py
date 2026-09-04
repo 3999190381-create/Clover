@@ -44,10 +44,18 @@ DOC_EMBEDDING_CONTEXT_SIZE = 512
 # Used to distinguish alternative indices
 ALT_INDEX_SUFFIX = "__danswer_alt_index"
 
-# Used for loading defaults for automatic deployments and dev flows
-# For local, use: mixedbread-ai/mxbai-rerank-xsmall-v1
+# Used for loading defaults for automatic deployments and dev flows. The
+# lightweight MixedBread model runs in the local inference model server and is
+# intentionally the default so a fresh installation has Cross-Encoder reranking
+# enabled without a manual UI round-trip. Set the value to "none" in
+# deployments that explicitly want reranking disabled.
+_DEFAULT_CROSS_ENCODER_MODEL_NAME = os.environ.get("DEFAULT_CROSS_ENCODER_MODEL_NAME")
 DEFAULT_CROSS_ENCODER_MODEL_NAME = (
-    os.environ.get("DEFAULT_CROSS_ENCODER_MODEL_NAME") or None
+    None
+    if _DEFAULT_CROSS_ENCODER_MODEL_NAME
+    and _DEFAULT_CROSS_ENCODER_MODEL_NAME.strip().lower() in {"none", "disabled", "off"}
+    else _DEFAULT_CROSS_ENCODER_MODEL_NAME
+    or "mixedbread-ai/mxbai-rerank-xsmall-v1"
 )
 DEFAULT_CROSS_ENCODER_API_KEY = os.environ.get("DEFAULT_CROSS_ENCODER_API_KEY") or None
 DEFAULT_CROSS_ENCODER_PROVIDER_TYPE = (
