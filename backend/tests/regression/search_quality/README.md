@@ -1,5 +1,21 @@
 # Clover RAG 质量小测试
 
+## 公开数据集起步方案
+
+如果暂时没有课程、课件和考勤资料，可以先使用公开中文检索集建立可复现基线：
+
+- **CMTEB T2Retrieval**：优先推荐，适合中文 query-document 检索和 Top-K 召回对比。
+- **CMTEB MMarco**：适合补充 query-document 相关性评测。
+- **DuReader / CMRC2018**：适合补充回答正确性和段落定位评测，但不要与检索召回指标混用。
+
+公开数据集通常使用 corpus/document id，而本评测脚本通过 `Document.link` 匹配相关文档。导入公开语料时，请为每个文档生成稳定链接，例如：
+
+```text
+https://public-eval.local/{dataset}/{split}/{doc_id}
+```
+
+然后将 query、相关文档链接和参考答案转换为本目录的 `test_queries.json` 格式。优化前后必须使用同一 corpus、同一 query split 和同一 Top-K；公开集结果只能作为离线基准，不能直接等同于课程资料场景的线上效果。
+
 这个脚本会调用 Clover 的真实检索与非流式问答接口，并对每条问题输出检索质量、回答质量和耗时。适合先用 5～10 条人工标注问题做冒烟测试，再逐步扩充测试集。
 
 完整评测会为每个问题创建临时聊天会话；脚本在取得回答后会尽力自动删除，避免污染正常聊天记录。
