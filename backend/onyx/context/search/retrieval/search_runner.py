@@ -54,7 +54,13 @@ def _embed_and_search(
 ) -> list[InferenceChunk]:
     query_embedding = get_query_embedding(query_request.query, db_session)
 
-    hybrid_alpha = query_request.hybrid_alpha or HYBRID_ALPHA
+    # Preserve an explicit 0.0 so callers can run a pure BM25 experiment;
+    # only an omitted value should fall back to the configured default.
+    hybrid_alpha = (
+        query_request.hybrid_alpha
+        if query_request.hybrid_alpha is not None
+        else HYBRID_ALPHA
+    )
 
     top_chunks = document_index.hybrid_retrieval(
         query=query_request.query,
