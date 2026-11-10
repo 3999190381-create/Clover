@@ -247,7 +247,7 @@ jobs:
             xdg-utils
 
       - name: setup node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # ratchet:actions/setup-node@v6.1.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # ratchet:actions/setup-node@v7.1.0
         with:
           node-version: 24
           package-manager-cache: false
